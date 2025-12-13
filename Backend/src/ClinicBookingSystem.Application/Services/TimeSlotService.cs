@@ -212,6 +212,7 @@ public class TimeSlotService : ITimeSlotService
         return await _timeSlotRepository.AddBulkAsync(slots);
     }
 
+
     public async Task<TimeSlot> UpdateTimeSlotAsync(int id, DateTime startTime, DateTime endTime, bool isAvailable, bool isBlocked, string? blockReason)
     {
         if (id <= 0)
