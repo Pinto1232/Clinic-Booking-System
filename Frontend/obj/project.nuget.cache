@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "hXIfq3YKOe8=",
+  "dgSpecHash": "uvfPVTIugMg=",
   "success": true,
   "projectFilePath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/ClinicBookingSystem.Frontend.csproj",
   "expectedPackageFiles": [
@@ -22,6 +22,8 @@
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.fileproviders.abstractions/9.0.9/microsoft.extensions.fileproviders.abstractions.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.fileproviders.physical/9.0.9/microsoft.extensions.fileproviders.physical.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.filesystemglobbing/9.0.9/microsoft.extensions.filesystemglobbing.9.0.9.nupkg.sha512",
+    "/Users/thepintocode/.nuget/packages/microsoft.extensions.localization/8.0.3/microsoft.extensions.localization.8.0.3.nupkg.sha512",
+    "/Users/thepintocode/.nuget/packages/microsoft.extensions.localization.abstractions/8.0.3/microsoft.extensions.localization.abstractions.8.0.3.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.logging/9.0.9/microsoft.extensions.logging.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.logging.abstractions/9.0.9/microsoft.extensions.logging.abstractions.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.extensions.options/9.0.9/microsoft.extensions.options.9.0.9.nupkg.sha512",
@@ -30,6 +32,7 @@
     "/Users/thepintocode/.nuget/packages/microsoft.jsinterop.webassembly/9.0.9/microsoft.jsinterop.webassembly.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.net.illink.tasks/9.0.9/microsoft.net.illink.tasks.9.0.9.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.net.sdk.webassembly.pack/9.0.9/microsoft.net.sdk.webassembly.pack.9.0.9.nupkg.sha512",
+    "/Users/thepintocode/.nuget/packages/mudblazor/6.19.0/mudblazor.6.19.0.nupkg.sha512",
     "/Users/thepintocode/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/9.0.9/microsoft.netcore.app.runtime.mono.browser-wasm.9.0.9.nupkg.sha512"
   ],
   "logs": []

@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ClinicBookingSystem.Frontend",
   "resources": {
-    "hash": "sha256-nCX86w1YCeknE0SCFxOz9hblZV2OHd6DjClRwObQUVY=",
+    "hash": "sha256-EKxIJbjitFszWz2XbQMzSG9NiTluP4Dx/87M64RkqC4=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Authorization.z6jo10m0rd.wasm": "Microsoft.AspNetCore.Authorization.wasm",
       "Microsoft.AspNetCore.Components.65wbz7t8mt.wasm": "Microsoft.AspNetCore.Components.wasm",
@@ -19,12 +19,15 @@
       "Microsoft.Extensions.FileProviders.Abstractions.gyyn78xplr.wasm": "Microsoft.Extensions.FileProviders.Abstractions.wasm",
       "Microsoft.Extensions.FileProviders.Physical.fwg0p8qiey.wasm": "Microsoft.Extensions.FileProviders.Physical.wasm",
       "Microsoft.Extensions.FileSystemGlobbing.wpqn02ct4s.wasm": "Microsoft.Extensions.FileSystemGlobbing.wasm",
+      "Microsoft.Extensions.Localization.qab9fk66hy.wasm": "Microsoft.Extensions.Localization.wasm",
+      "Microsoft.Extensions.Localization.Abstractions.xe3ex8nc4u.wasm": "Microsoft.Extensions.Localization.Abstractions.wasm",
       "Microsoft.Extensions.Logging.2h3t8m6coa.wasm": "Microsoft.Extensions.Logging.wasm",
       "Microsoft.Extensions.Logging.Abstractions.ni4towxuts.wasm": "Microsoft.Extensions.Logging.Abstractions.wasm",
       "Microsoft.Extensions.Options.2nlpwp09nn.wasm": "Microsoft.Extensions.Options.wasm",
       "Microsoft.Extensions.Primitives.08rjikrqbs.wasm": "Microsoft.Extensions.Primitives.wasm",
       "Microsoft.JSInterop.9ydsnriizw.wasm": "Microsoft.JSInterop.wasm",
       "Microsoft.JSInterop.WebAssembly.v6rnols3v9.wasm": "Microsoft.JSInterop.WebAssembly.wasm",
+      "MudBlazor.jsukl5775w.wasm": "MudBlazor.wasm",
       "Microsoft.CSharp.j3zkownjjr.wasm": "Microsoft.CSharp.wasm",
       "Microsoft.VisualBasic.Core.qljjwgjnrn.wasm": "Microsoft.VisualBasic.Core.wasm",
       "Microsoft.VisualBasic.ocn5mkr2m2.wasm": "Microsoft.VisualBasic.wasm",
@@ -201,8 +204,8 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "ClinicBookingSystem.Frontend.5iulrrpfuy.wasm": "ClinicBookingSystem.Frontend.wasm",
-      "ClinicBookingSystem.Frontend.bl2lgogp2a.pdb": "ClinicBookingSystem.Frontend.pdb"
+      "ClinicBookingSystem.Frontend.y9eq0ejy6a.wasm": "ClinicBookingSystem.Frontend.wasm",
+      "ClinicBookingSystem.Frontend.2dkungzqob.pdb": "ClinicBookingSystem.Frontend.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.9ih887ebfz.js": "sha256-oS7IRiQoVt9ThQ7Y2UM3XoeY0JqPD02cg9IvRdufn2w="
@@ -239,12 +242,15 @@
       "Microsoft.Extensions.FileProviders.Abstractions.gyyn78xplr.wasm": "sha256-SBignQhR5OehDa078KhZs6MJ37jZaMAXwBOJv/+aPtc=",
       "Microsoft.Extensions.FileProviders.Physical.fwg0p8qiey.wasm": "sha256-j06UStE6FBwEz3CJbgLfbKKSePh0FaT4PK7wtDoUXs0=",
       "Microsoft.Extensions.FileSystemGlobbing.wpqn02ct4s.wasm": "sha256-BC/MCU6S9BBMqOrRwZh0plnIpsYyZKyENCmb6p3Acsk=",
+      "Microsoft.Extensions.Localization.qab9fk66hy.wasm": "sha256-csBUd4QuytZ4vFjfWtJaYptncxX/miKR5lPhAB9gefg=",
+      "Microsoft.Extensions.Localization.Abstractions.xe3ex8nc4u.wasm": "sha256-N6ZBgmVtKuTLyVca1QduGSfIrtLeu8VDZTMjHhRoW0Q=",
       "Microsoft.Extensions.Logging.2h3t8m6coa.wasm": "sha256-1jYRjcDI2/MnB5Htgj4yUaHr8gA/poI4oLgWUMZYnV0=",
       "Microsoft.Extensions.Logging.Abstractions.ni4towxuts.wasm": "sha256-H+TpHvK/z4RGb8EfLe1cGb1TwnCKZAmNxt8e3s3CUSM=",
       "Microsoft.Extensions.Options.2nlpwp09nn.wasm": "sha256-zp3zuBmKVlE6HjY0Br1uj3fY9sU7ET4ITzgpnpmj9V0=",
       "Microsoft.Extensions.Primitives.08rjikrqbs.wasm": "sha256-cJ0bTIChHCfvdOf7OUoTnjDep6XHMKViMUTyqAiaD48=",
       "Microsoft.JSInterop.9ydsnriizw.wasm": "sha256-oZgTa/to3sE2tSzwcZQ0GIX1meeIGAYVE7IoJDL4RkI=",
       "Microsoft.JSInterop.WebAssembly.v6rnols3v9.wasm": "sha256-Z/XKvzIKcHVmnvT7y1f4/N5zSNqzNAfjsLaBDIyCkYs=",
+      "MudBlazor.jsukl5775w.wasm": "sha256-HY4vz+qWhPWVMF7KCjID5aBnVGBAIu73019iLYG1Cg0=",
       "Microsoft.CSharp.j3zkownjjr.wasm": "sha256-r7YS8Hp01zUR3LoH5JsS7IrucOta+FnV199bCLii7Pk=",
       "Microsoft.VisualBasic.Core.qljjwgjnrn.wasm": "sha256-/jlp74GLHWhrCfjAmWlVClO68H3wIk+kVx9A/gjByls=",
       "Microsoft.VisualBasic.ocn5mkr2m2.wasm": "sha256-eNtd5fm3g/oUf5hiuJ1DpH74Qzd5eTxbpPOEunY0DZQ=",
@@ -412,10 +418,10 @@
       "WindowsBase.vy2l5u79y6.wasm": "sha256-ufB9Mo5joMyUs3DzXWWBFFIZNEVrt6h9N5stYB6Oln4=",
       "mscorlib.xd6mv31d55.wasm": "sha256-1YSLR2eZt3ceALFV//vZUF2AloxVil3VlrW1zZYPSEI=",
       "netstandard.kaml52uspo.wasm": "sha256-HLEwBpLfzKw2/zGSVzHzFJxznCkt/WIjahrziiMrOpA=",
-      "ClinicBookingSystem.Frontend.5iulrrpfuy.wasm": "sha256-rSTnfXv9B9pFiMuPKJ+GZyERc4FgGy9BluHJzLYPmmY="
+      "ClinicBookingSystem.Frontend.y9eq0ejy6a.wasm": "sha256-Oo2Hs4RXgm3B/vE7fAADgdQPpXVbGZoPWlwZnULK4ow="
     },
     "pdb": {
-      "ClinicBookingSystem.Frontend.bl2lgogp2a.pdb": "sha256-oU/4OM+9iSi1GO7mcqyhTaJK/JdZa47azw7f+hyBfHk="
+      "ClinicBookingSystem.Frontend.2dkungzqob.pdb": "sha256-likzw7ZXPcxI0VNVZnO9z2pZslN4uCpqX0L4Oq+inuM="
     }
   },
   "cacheBootResources": true,
