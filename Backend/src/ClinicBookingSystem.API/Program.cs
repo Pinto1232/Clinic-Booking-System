@@ -1,8 +1,24 @@
+using ClinicBookingSystem.Application.Services;
+using ClinicBookingSystem.Domain.Interfaces;
+using ClinicBookingSystem.Infrastructure.Data;
+using ClinicBookingSystem.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+// Add DbContext with SQLite
+builder.Services.AddDbContext<ClinicBookingSystemDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register repositories
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
+// Register services
+builder.Services.AddScoped<IPatientService, PatientService>();
 
 var app = builder.Build();
 
@@ -13,5 +29,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
 app.Run();
