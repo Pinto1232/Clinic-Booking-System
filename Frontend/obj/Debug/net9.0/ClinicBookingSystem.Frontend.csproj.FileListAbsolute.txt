@@ -1282,8 +1282,6 @@
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_CJK.tjcz0u77k5.dat
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_EFIGS.tptq2av103.dat
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_no_CJK.lfu7j35m59.dat
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.okm5wjwp7a.wasm
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.egngw28wo1.pdb
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/blazor.boot.json
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/blazor.webassembly.js.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/Microsoft.AspNetCore.Authorization.z6jo10m0rd.wasm.gz
@@ -1486,8 +1484,6 @@
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_CJK.tjcz0u77k5.dat.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_EFIGS.tptq2av103.dat.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/icudt_no_CJK.lfu7j35m59.dat.gz
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.okm5wjwp7a.wasm.gz
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.egngw28wo1.pdb.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/blazor.boot.json.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/ClinicBookingSystem.Frontend.staticwebassets.runtime.json
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/ClinicBookingSystem.Frontend.staticwebassets.endpoints.json
@@ -2152,9 +2148,6 @@
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/8mtw7wul1e-tjcz0u77k5.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/q0t48ggmc2-tptq2av103.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/abybnrvn5q-lfu7j35m59.gz
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/zczyjt3cmx-okm5wjwp7a.gz
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/oliamgopdi-egngw28wo1.gz
-/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/xykmpdj7qq-ibtt3hw507.gz
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/staticwebassets.build.json
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/staticwebassets.build.json.cache
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/staticwebassets.development.json
@@ -2164,3 +2157,10 @@
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/refint/ClinicBookingSystem.Frontend.dll
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/ClinicBookingSystem.Frontend.pdb
 /Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/ref/ClinicBookingSystem.Frontend.dll
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.5iulrrpfuy.wasm
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.bl2lgogp2a.pdb
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.5iulrrpfuy.wasm.gz
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/bin/Debug/net9.0/wwwroot/_framework/ClinicBookingSystem.Frontend.bl2lgogp2a.pdb.gz
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/zczyjt3cmx-5iulrrpfuy.gz
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/oliamgopdi-bl2lgogp2a.gz
+/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Frontend/obj/Debug/net9.0/compressed/xykmpdj7qq-48az055yvc.gz
