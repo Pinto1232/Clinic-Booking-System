@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "6fak0i94QeU=",
+  "success": true,
+  "projectFilePath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.API/ClinicBookingSystem.API.csproj",
+  "expectedPackageFiles": [
+    "/Users/thepintocode/.nuget/packages/microsoft.aspnetcore.openapi/9.0.9/microsoft.aspnetcore.openapi.9.0.9.nupkg.sha512",
+    "/Users/thepintocode/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

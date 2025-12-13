@@ -1,0 +1,218 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/tests/ClinicBookingSystem.Application.Tests/ClinicBookingSystem.Application.Tests.csproj": {}
+  },
+  "projects": {
+    "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/ClinicBookingSystem.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/ClinicBookingSystem.Application.csproj",
+        "projectName": "ClinicBookingSystem.Application",
+        "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/ClinicBookingSystem.Application.csproj",
+        "packagesPath": "/Users/thepintocode/.nuget/packages/",
+        "outputPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/thepintocode/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj": {
+                "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj",
+        "projectName": "ClinicBookingSystem.Domain",
+        "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj",
+        "packagesPath": "/Users/thepintocode/.nuget/packages/",
+        "outputPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/thepintocode/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/tests/ClinicBookingSystem.Application.Tests/ClinicBookingSystem.Application.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/tests/ClinicBookingSystem.Application.Tests/ClinicBookingSystem.Application.Tests.csproj",
+        "projectName": "ClinicBookingSystem.Application.Tests",
+        "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/tests/ClinicBookingSystem.Application.Tests/ClinicBookingSystem.Application.Tests.csproj",
+        "packagesPath": "/Users/thepintocode/.nuget/packages/",
+        "outputPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/tests/ClinicBookingSystem.Application.Tests/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/thepintocode/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/ClinicBookingSystem.Application.csproj": {
+                "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Application/ClinicBookingSystem.Application.csproj"
+              },
+              "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj": {
+                "projectPath": "/Users/thepintocode/Documents/Projects/Clinic-Booking-System/Backend/src/ClinicBookingSystem.Domain/ClinicBookingSystem.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.12.0, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.72, )"
+            },
+            "coverlet.collector": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.2, )"
+            },
+            "xunit.runner.visualstudio": {
+              "target": "Package",
+              "version": "[2.8.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
