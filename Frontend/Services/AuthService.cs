@@ -29,6 +29,20 @@ public class AuthService
         return Task.FromResult(false);
     }
 
+    public Task<bool> RegisterAsync(string email, string password, string firstName, string lastName, string? phoneNumber)
+    {
+        // TODO: Replace with actual API registration
+        // For now, simulate a successful registration
+        if (!string.IsNullOrEmpty(email) && 
+            !string.IsNullOrEmpty(password) && 
+            !string.IsNullOrEmpty(firstName) && 
+            !string.IsNullOrEmpty(lastName))
+        {
+            return Task.FromResult(true);
+        }
+        return Task.FromResult(false);
+    }
+
     public void Logout()
     {
         _isAuthenticated = false;

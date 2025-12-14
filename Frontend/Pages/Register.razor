@@ -1,0 +1,214 @@
+@page "/register"
+@layout AuthLayout
+@using ClinicBookingSystem.Frontend.Services
+@using ClinicBookingSystem.Frontend.Layout
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudCard Elevation="4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4" Align="Align.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Class="mr-2" />
+                    Clinic Booking System
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
+                    Create your account
+                </MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="registerModel.FirstName"
+                                      Label="First Name"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Required="true"
+                                      RequiredError="First name is required" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="registerModel.LastName"
+                                      Label="Last Name"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Required="true"
+                                      RequiredError="Last name is required" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudTextField @bind-Value="registerModel.Email"
+                              Label="Email"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Email"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Email"
+                              Class="mt-4"
+                              Required="true"
+                              RequiredError="Email is required" />
+
+                <MudTextField @bind-Value="registerModel.PhoneNumber"
+                              Label="Phone Number (Optional)"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Telephone"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Phone"
+                              Class="mt-4" />
+
+                <MudTextField @bind-Value="registerModel.Password"
+                              Label="Password"
+                              Variant="Variant.Outlined"
+                              InputType="@passwordInputType"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@passwordIcon"
+                              OnAdornmentClick="TogglePasswordVisibility"
+                              Class="mt-4"
+                              Required="true"
+                              RequiredError="Password is required"
+                              HelperText="Minimum 6 characters" />
+
+                <MudTextField @bind-Value="registerModel.ConfirmPassword"
+                              Label="Confirm Password"
+                              Variant="Variant.Outlined"
+                              InputType="@confirmPasswordInputType"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@confirmPasswordIcon"
+                              OnAdornmentClick="ToggleConfirmPasswordVisibility"
+                              Class="mt-4"
+                              Required="true"
+                              RequiredError="Please confirm your password" />
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+                }
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <MudAlert Severity="Severity.Success" Class="mt-4">@successMessage</MudAlert>
+                }
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Size="Size.Large"
+                           Class="mt-4"
+                           Disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Creating account...</span>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                        <span>Create Account</span>
+                    }
+                </MudButton>
+            </EditForm>
+        </MudCardContent>
+        <MudCardActions Class="justify-center pb-4">
+            <MudText Typo="Typo.body2">
+                Already have an account? 
+                <MudLink Href="/login" Color="Color.Primary">Sign in here</MudLink>
+            </MudText>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool isLoading = false;
+    private string? errorMessage;
+    private string? successMessage;
+    
+    private bool showPassword = false;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
+    
+    private bool showConfirmPassword = false;
+    private InputType confirmPasswordInputType = InputType.Password;
+    private string confirmPasswordIcon = Icons.Material.Filled.VisibilityOff;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? InputType.Text : InputType.Password;
+        passwordIcon = showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        showConfirmPassword = !showConfirmPassword;
+        confirmPasswordInputType = showConfirmPassword ? InputType.Text : InputType.Password;
+        confirmPasswordIcon = showConfirmPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            // Validate passwords match
+            if (registerModel.Password != registerModel.ConfirmPassword)
+            {
+                errorMessage = "Passwords do not match.";
+                return;
+            }
+
+            // Validate password length
+            if (registerModel.Password.Length < 6)
+            {
+                errorMessage = "Password must be at least 6 characters.";
+                return;
+            }
+
+            var success = await AuthService.RegisterAsync(
+                registerModel.Email,
+                registerModel.Password,
+                registerModel.FirstName,
+                registerModel.LastName,
+                registerModel.PhoneNumber
+            );
+
+            if (success)
+            {
+                successMessage = "Account created successfully! Redirecting to login...";
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = "Registration failed. Email may already be in use.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private class RegisterModel
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}
