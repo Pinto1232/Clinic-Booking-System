@@ -12,11 +12,13 @@ namespace ClinicBookingSystem.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPatientRepository _patientRepository;
     private readonly IConfiguration _configuration;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IPatientRepository patientRepository, IConfiguration configuration)
     {
         _userRepository = userRepository;
+        _patientRepository = patientRepository;
         _configuration = configuration;
     }
 
@@ -54,7 +56,19 @@ public class AuthService : IAuthService
         if (await _userRepository.EmailExistsAsync(email))
             return (false, "Email is already registered", null);
 
-        // Create new user
+        // Create a Patient record for the user
+        var patient = new Patient
+        {
+            FirstName = firstName.Trim(),
+            LastName = lastName.Trim(),
+            Email = email.ToLower().Trim(),
+            PhoneNumber = phoneNumber?.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _patientRepository.AddAsync(patient);
+
+        // Create new user with linked Patient
         var user = new User
         {
             Email = email.ToLower().Trim(),
@@ -64,7 +78,9 @@ public class AuthService : IAuthService
             PhoneNumber = phoneNumber?.Trim(),
             Role = UserRole.Patient,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            PatientId = patient.Id,
+            Patient = patient
         };
 
         await _userRepository.AddAsync(user);

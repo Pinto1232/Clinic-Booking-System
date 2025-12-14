@@ -8,7 +8,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// Configure HttpClient to point to the backend API
+builder.Services.AddScoped(sp => new HttpClient 
+{ 
+    BaseAddress = new Uri("http://localhost:5139/") 
+});
+
 builder.Services.AddMudServices(config =>
 {
     config.PopoverOptions.ThrowOnDuplicateProvider = false;
@@ -19,7 +24,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 5000;
 });
 
-// Register Services
+// Register Services - AuthService must be registered before BookingService
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<BookingService>();
 

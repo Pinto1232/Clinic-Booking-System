@@ -98,14 +98,14 @@
 
         try
         {
-            var success = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+            var (success, message) = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
             if (success)
             {
                 NavigationManager.NavigateTo("/");
             }
             else
             {
-                errorMessage = "Invalid email or password. Please try again.";
+                errorMessage = message ?? "Invalid email or password. Please try again.";
             }
         }
         catch (Exception ex)

@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using ClinicBookingSystem.Frontend.Models;
 
 namespace ClinicBookingSystem.Frontend.Services;
@@ -5,44 +6,97 @@ namespace ClinicBookingSystem.Frontend.Services;
 public class BookingService
 {
     private readonly HttpClient _httpClient;
-    
-    // In-memory storage for demo (replace with API calls later)
-    private static List<DoctorModel> _doctors = new()
-    {
-        new DoctorModel { Id = 1, FirstName = "John", LastName = "Smith", Specialization = "General Medicine", Email = "john.smith@clinic.com", IsAvailable = true },
-        new DoctorModel { Id = 2, FirstName = "Sarah", LastName = "Johnson", Specialization = "Pediatrics", Email = "sarah.johnson@clinic.com", IsAvailable = true },
-        new DoctorModel { Id = 3, FirstName = "Michael", LastName = "Williams", Specialization = "Cardiology", Email = "michael.williams@clinic.com", IsAvailable = true },
-        new DoctorModel { Id = 4, FirstName = "Emily", LastName = "Brown", Specialization = "Dermatology", Email = "emily.brown@clinic.com", IsAvailable = true },
-        new DoctorModel { Id = 5, FirstName = "David", LastName = "Davis", Specialization = "Orthopedics", Email = "david.davis@clinic.com", IsAvailable = true }
-    };
+    private readonly AuthService _authService;
 
-    private static List<AppointmentModel> _appointments = new();
-    private static int _nextAppointmentId = 1;
-
-    public BookingService(HttpClient httpClient)
+    public BookingService(HttpClient httpClient, AuthService authService)
     {
         _httpClient = httpClient;
+        _authService = authService;
     }
 
     // Get all available doctors
-    public Task<List<DoctorModel>> GetDoctorsAsync()
+    public async Task<List<DoctorModel>> GetDoctorsAsync()
     {
-        return Task.FromResult(_doctors.Where(d => d.IsAvailable).ToList());
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/doctors/available");
+            return response?.Select(d => new DoctorModel
+            {
+                Id = d.Id,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Email = d.Email,
+                PhoneNumber = d.PhoneNumber,
+                Specialization = d.Specialization,
+                IsAvailable = d.IsAvailable
+            }).ToList() ?? new List<DoctorModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching doctors: {ex.Message}");
+            return new List<DoctorModel>();
+        }
     }
 
     // Get doctor by ID
-    public Task<DoctorModel?> GetDoctorByIdAsync(int doctorId)
+    public async Task<DoctorModel?> GetDoctorByIdAsync(int doctorId)
     {
-        return Task.FromResult(_doctors.FirstOrDefault(d => d.Id == doctorId));
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<DoctorResponse>($"api/doctors/{doctorId}");
+            if (response == null) return null;
+            
+            return new DoctorModel
+            {
+                Id = response.Id,
+                FirstName = response.FirstName,
+                LastName = response.LastName,
+                Email = response.Email,
+                PhoneNumber = response.PhoneNumber,
+                Specialization = response.Specialization,
+                IsAvailable = response.IsAvailable
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     // Get available time slots for a doctor on a specific date
-    public Task<List<TimeSlotModel>> GetAvailableTimeSlotsAsync(int doctorId, DateTime date)
+    public async Task<List<TimeSlotModel>> GetAvailableTimeSlotsAsync(int doctorId, DateTime date)
+    {
+        try
+        {
+            var dateStr = date.ToString("yyyy-MM-dd");
+            var response = await _httpClient.GetFromJsonAsync<List<TimeSlotResponse>>(
+                $"api/timeslots/doctor/{doctorId}/date/{dateStr}/available");
+            
+            return response?.Select(t => new TimeSlotModel
+            {
+                Id = t.Id,
+                DoctorId = t.DoctorId,
+                StartTime = t.StartTime,
+                EndTime = t.EndTime,
+                IsAvailable = t.IsAvailable,
+                IsBlocked = t.IsBlocked
+            }).ToList() ?? new List<TimeSlotModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching time slots: {ex.Message}");
+            // Generate default time slots if API fails
+            return GenerateDefaultTimeSlots(doctorId, date);
+        }
+    }
+
+    // Generate default time slots (fallback)
+    private List<TimeSlotModel> GenerateDefaultTimeSlots(int doctorId, DateTime date)
     {
         var slots = new List<TimeSlotModel>();
-        var startHour = 9; // 9 AM
-        var endHour = 17; // 5 PM
-        var slotDuration = 30; // 30 minutes
+        var startHour = 9;
+        var endHour = 17;
+        var slotDuration = 30;
 
         var slotId = 1;
         for (var hour = startHour; hour < endHour; hour++)
@@ -52,146 +106,231 @@ public class BookingService
                 var startTime = new DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
                 var endTime = startTime.AddMinutes(slotDuration);
 
-                // Check if slot is in the past
                 if (startTime <= DateTime.Now)
                     continue;
 
-                // Check if slot is already booked
-                var isBooked = _appointments.Any(a =>
-                    a.DoctorId == doctorId &&
-                    a.AppointmentDate.Date == date.Date &&
-                    a.AppointmentTime.TimeOfDay == startTime.TimeOfDay &&
-                    a.Status != AppointmentStatus.Cancelled);
-
-                if (!isBooked)
+                slots.Add(new TimeSlotModel
                 {
-                    slots.Add(new TimeSlotModel
-                    {
-                        Id = slotId++,
-                        DoctorId = doctorId,
-                        StartTime = startTime,
-                        EndTime = endTime,
-                        IsAvailable = true,
-                        IsBlocked = false
-                    });
-                }
+                    Id = slotId++,
+                    DoctorId = doctorId,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    IsAvailable = true,
+                    IsBlocked = false
+                });
             }
         }
 
-        return Task.FromResult(slots);
+        return slots;
     }
 
     // Book an appointment
-    public Task<(bool Success, string Message, AppointmentModel? Appointment)> BookAppointmentAsync(CreateAppointmentRequest request)
+    public async Task<(bool Success, string Message, AppointmentModel? Appointment)> BookAppointmentAsync(CreateAppointmentRequest request)
     {
-        // Validation: Check if doctor exists
-        var doctor = _doctors.FirstOrDefault(d => d.Id == request.DoctorId);
-        if (doctor == null)
+        try
         {
-            return Task.FromResult<(bool, string, AppointmentModel?)>((false, "Doctor not found.", null));
+            var patientId = _authService.PatientId;
+            if (!patientId.HasValue)
+            {
+                return (false, "User is not authenticated or does not have a patient profile.", null);
+            }
+
+            var apiRequest = new
+            {
+                PatientId = patientId.Value,
+                DoctorId = request.DoctorId,
+                AppointmentDate = request.AppointmentDate,
+                AppointmentTime = request.AppointmentTime,
+                DurationInMinutes = request.DurationInMinutes,
+                Reason = request.Reason,
+                Notes = request.Notes
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/appointments", apiRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<AppointmentResponse>();
+                if (result != null)
+                {
+                    var appointment = MapToAppointmentModel(result);
+                    return (true, "Appointment booked successfully!", appointment);
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "This time slot is already booked. Please select another time.", null);
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to book appointment.", null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error booking appointment: {ex.Message}");
+            return (false, $"An error occurred: {ex.Message}", null);
         }
 
-        // Validation: Check if date is not in the past
-        var appointmentDateTime = request.AppointmentDate.Date.Add(request.AppointmentTime.TimeOfDay);
-        if (appointmentDateTime <= DateTime.Now)
-        {
-            return Task.FromResult<(bool, string, AppointmentModel?)>((false, "Cannot book appointments in the past.", null));
-        }
-
-        // Validation: Check for double booking
-        var hasConflict = _appointments.Any(a =>
-            a.DoctorId == request.DoctorId &&
-            a.AppointmentDate.Date == request.AppointmentDate.Date &&
-            a.AppointmentTime.TimeOfDay == request.AppointmentTime.TimeOfDay &&
-            a.Status != AppointmentStatus.Cancelled);
-
-        if (hasConflict)
-        {
-            return Task.FromResult<(bool, string, AppointmentModel?)>((false, "This time slot is already booked. Please select another time.", null));
-        }
-
-        // Create the appointment
-        var appointment = new AppointmentModel
-        {
-            Id = _nextAppointmentId++,
-            PatientId = 1, // TODO: Get from authenticated user
-            DoctorId = request.DoctorId,
-            PatientName = "Current User", // TODO: Get from authenticated user
-            DoctorName = doctor.FullName,
-            DoctorSpecialization = doctor.Specialization,
-            AppointmentDate = request.AppointmentDate,
-            AppointmentTime = request.AppointmentTime,
-            DurationInMinutes = request.DurationInMinutes,
-            Status = AppointmentStatus.Scheduled,
-            Reason = request.Reason,
-            Notes = request.Notes,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _appointments.Add(appointment);
-
-        return Task.FromResult<(bool, string, AppointmentModel?)>((true, "Appointment booked successfully!", appointment));
+        return (false, "Failed to book appointment.", null);
     }
 
     // Get user's appointments
-    public Task<List<AppointmentModel>> GetMyAppointmentsAsync()
+    public async Task<List<AppointmentModel>> GetMyAppointmentsAsync()
     {
-        // TODO: Filter by authenticated user's patient ID
-        return Task.FromResult(_appointments
-            .Where(a => a.Status != AppointmentStatus.Cancelled)
-            .OrderBy(a => a.AppointmentDateTime)
-            .ToList());
+        try
+        {
+            var patientId = _authService.PatientId;
+            if (!patientId.HasValue)
+            {
+                return new List<AppointmentModel>();
+            }
+
+            var response = await _httpClient.GetFromJsonAsync<List<AppointmentResponse>>(
+                $"api/appointments/patient/{patientId.Value}");
+            
+            return response?.Select(MapToAppointmentModel).ToList() ?? new List<AppointmentModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching appointments: {ex.Message}");
+            return new List<AppointmentModel>();
+        }
     }
 
     // Get upcoming appointments
-    public Task<List<AppointmentModel>> GetUpcomingAppointmentsAsync()
+    public async Task<List<AppointmentModel>> GetUpcomingAppointmentsAsync()
     {
-        return Task.FromResult(_appointments
-            .Where(a => a.AppointmentDateTime > DateTime.Now && a.Status != AppointmentStatus.Cancelled)
-            .OrderBy(a => a.AppointmentDateTime)
-            .ToList());
+        try
+        {
+            var patientId = _authService.PatientId;
+            if (!patientId.HasValue)
+            {
+                return new List<AppointmentModel>();
+            }
+
+            var response = await _httpClient.GetFromJsonAsync<List<AppointmentResponse>>(
+                $"api/appointments/upcoming/patient/{patientId.Value}");
+            
+            return response?.Select(MapToAppointmentModel).ToList() ?? new List<AppointmentModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching upcoming appointments: {ex.Message}");
+            return new List<AppointmentModel>();
+        }
     }
 
     // Cancel an appointment
-    public Task<(bool Success, string Message)> CancelAppointmentAsync(int appointmentId, string? reason = null)
+    public async Task<(bool Success, string Message)> CancelAppointmentAsync(int appointmentId, string? reason = null)
     {
-        var appointment = _appointments.FirstOrDefault(a => a.Id == appointmentId);
-        if (appointment == null)
+        try
         {
-            return Task.FromResult((false, "Appointment not found."));
+            var request = new { CancellationReason = reason };
+            var response = await _httpClient.PostAsJsonAsync($"api/appointments/{appointmentId}/cancel", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Appointment cancelled successfully.");
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to cancel appointment.");
+            }
         }
-
-        if (appointment.Status == AppointmentStatus.Cancelled)
+        catch (Exception ex)
         {
-            return Task.FromResult((false, "Appointment is already cancelled."));
+            return (false, $"An error occurred: {ex.Message}");
         }
-
-        if (appointment.AppointmentDateTime <= DateTime.Now)
-        {
-            return Task.FromResult((false, "Cannot cancel past appointments."));
-        }
-
-        appointment.Status = AppointmentStatus.Cancelled;
-
-        return Task.FromResult((true, "Appointment cancelled successfully."));
     }
 
     // Confirm an appointment
-    public Task<(bool Success, string Message)> ConfirmAppointmentAsync(int appointmentId)
+    public async Task<(bool Success, string Message)> ConfirmAppointmentAsync(int appointmentId)
     {
-        var appointment = _appointments.FirstOrDefault(a => a.Id == appointmentId);
-        if (appointment == null)
+        try
         {
-            return Task.FromResult((false, "Appointment not found."));
+            var response = await _httpClient.PostAsJsonAsync($"api/appointments/{appointmentId}/confirm", new { });
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Appointment confirmed successfully.");
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to confirm appointment.");
+            }
         }
-
-        if (appointment.Status != AppointmentStatus.Scheduled)
+        catch (Exception ex)
         {
-            return Task.FromResult((false, "Only scheduled appointments can be confirmed."));
+            return (false, $"An error occurred: {ex.Message}");
         }
-
-        appointment.Status = AppointmentStatus.Confirmed;
-
-        return Task.FromResult((true, "Appointment confirmed successfully."));
     }
+
+    private AppointmentModel MapToAppointmentModel(AppointmentResponse response)
+    {
+        return new AppointmentModel
+        {
+            Id = response.Id,
+            PatientId = response.PatientId,
+            DoctorId = response.DoctorId,
+            PatientName = response.PatientName,
+            DoctorName = response.DoctorName,
+            DoctorSpecialization = response.DoctorSpecialization,
+            AppointmentDate = response.AppointmentDate,
+            AppointmentTime = response.AppointmentTime,
+            DurationInMinutes = response.DurationInMinutes,
+            Status = (AppointmentStatus)response.Status,
+            Reason = response.Reason,
+            Notes = response.Notes,
+            CreatedAt = response.CreatedAt
+        };
+    }
+}
+
+// Response DTOs for API communication
+public class DoctorResponse
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string Specialization { get; set; } = string.Empty;
+    public bool IsAvailable { get; set; }
+}
+
+public class TimeSlotResponse
+{
+    public int Id { get; set; }
+    public int DoctorId { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public bool IsAvailable { get; set; }
+    public bool IsBlocked { get; set; }
+}
+
+public class AppointmentResponse
+{
+    public int Id { get; set; }
+    public int PatientId { get; set; }
+    public int DoctorId { get; set; }
+    public string? PatientName { get; set; }
+    public string? DoctorName { get; set; }
+    public string? DoctorSpecialization { get; set; }
+    public DateTime AppointmentDate { get; set; }
+    public DateTime AppointmentTime { get; set; }
+    public int DurationInMinutes { get; set; }
+    public int Status { get; set; }
+    public string? Reason { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class ErrorResponse
+{
+    public string? Message { get; set; }
 }

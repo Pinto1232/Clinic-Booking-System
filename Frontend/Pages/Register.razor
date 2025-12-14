@@ -173,7 +173,7 @@
                 return;
             }
 
-            var success = await AuthService.RegisterAsync(
+            var (success, message) = await AuthService.RegisterAsync(
                 registerModel.Email,
                 registerModel.Password,
                 registerModel.FirstName,
@@ -183,13 +183,13 @@
 
             if (success)
             {
-                successMessage = "Account created successfully! Redirecting to login...";
-                await Task.Delay(1500);
-                NavigationManager.NavigateTo("/login");
+                successMessage = "Account created successfully! Redirecting to dashboard...";
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
             else
             {
-                errorMessage = "Registration failed. Email may already be in use.";
+                errorMessage = message ?? "Registration failed. Email may already be in use.";
             }
         }
         catch (Exception ex)

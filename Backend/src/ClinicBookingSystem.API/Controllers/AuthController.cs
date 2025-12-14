@@ -48,7 +48,9 @@ public class AuthController : ControllerBase
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     FullName = user.GetFullName(),
-                    Role = user.Role.ToString()
+                    Role = user.Role.ToString(),
+                    PatientId = user.PatientId,
+                    DoctorId = user.DoctorId
                 } : null
             });
         }
@@ -97,7 +99,9 @@ public class AuthController : ControllerBase
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     FullName = user.GetFullName(),
-                    Role = user.Role.ToString()
+                    Role = user.Role.ToString(),
+                    PatientId = user.PatientId,
+                    DoctorId = user.DoctorId
                 } : null
             });
         }
