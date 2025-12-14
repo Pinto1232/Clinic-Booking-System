@@ -7,11 +7,13 @@ public class TimeSlotService : ITimeSlotService
 {
     private readonly ITimeSlotRepository _timeSlotRepository;
     private readonly IDoctorRepository _doctorRepository;
+    private readonly IAppointmentRepository _appointmentRepository;
 
-    public TimeSlotService(ITimeSlotRepository timeSlotRepository, IDoctorRepository doctorRepository)
+    public TimeSlotService(ITimeSlotRepository timeSlotRepository, IDoctorRepository doctorRepository, IAppointmentRepository appointmentRepository)
     {
         _timeSlotRepository = timeSlotRepository;
         _doctorRepository = doctorRepository;
+        _appointmentRepository = appointmentRepository;
     }
 
     public async Task<TimeSlot?> GetTimeSlotByIdAsync(int id)
@@ -115,7 +117,62 @@ public class TimeSlotService : ITimeSlotService
         if (!doctorExists)
             throw new InvalidOperationException($"Doctor with ID {doctorId} not found");
 
-        return await _timeSlotRepository.GetAvailableSlotsByDoctorAndDateAsync(doctorId, date.Date);
+        // Generate available time slots dynamically
+        return await GenerateAvailableTimeSlotsAsync(doctorId, date);
+    }
+
+    /// <summary>
+    /// Generates available time slots for a doctor on a given date,
+    /// excluding slots that already have appointments.
+    /// </summary>
+    private async Task<IEnumerable<TimeSlot>> GenerateAvailableTimeSlotsAsync(int doctorId, DateTime date)
+    {
+        var slots = new List<TimeSlot>();
+        var startHour = 9; // 9 AM
+        var endHour = 17; // 5 PM
+        var slotDuration = 30; // 30 minutes
+
+        // Get existing appointments for this doctor on this date
+        var existingAppointments = await _appointmentRepository.GetByDoctorAndDateRangeAsync(
+            doctorId, date.Date, date.Date.AddDays(1));
+        
+        var bookedTimes = existingAppointments
+            .Where(a => a.Status != AppointmentStatus.Cancelled)
+            .Select(a => a.AppointmentDate.Date.Add(a.AppointmentTime.TimeOfDay))
+            .ToHashSet();
+
+        var slotId = 1;
+        var now = DateTime.UtcNow;
+
+        for (var hour = startHour; hour < endHour; hour++)
+        {
+            for (var minute = 0; minute < 60; minute += slotDuration)
+            {
+                var startTime = new DateTime(date.Year, date.Month, date.Day, hour, minute, 0, DateTimeKind.Utc);
+                var endTime = startTime.AddMinutes(slotDuration);
+
+                // Skip if slot is in the past
+                if (startTime <= now)
+                    continue;
+
+                // Skip if slot is already booked
+                if (bookedTimes.Contains(startTime))
+                    continue;
+
+                slots.Add(new TimeSlot
+                {
+                    Id = slotId++,
+                    DoctorId = doctorId,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    IsAvailable = true,
+                    IsBlocked = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        return slots;
     }
 
     public async Task<IEnumerable<TimeSlot>> GetAvailableSlotsByDoctorAndDateRangeAsync(int doctorId, DateTime startDate, DateTime endDate)
