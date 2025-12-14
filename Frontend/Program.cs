@@ -11,7 +11,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Configure HttpClient to point to the backend API
 builder.Services.AddScoped(sp => new HttpClient 
 { 
-    BaseAddress = new Uri("http://localhost:5139/") 
+    BaseAddress = new Uri("http://localhost:5113/") 
 });
 
 builder.Services.AddMudServices(config =>
