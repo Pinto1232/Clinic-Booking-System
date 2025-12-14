@@ -1,21 +1,452 @@
 ﻿@page "/"
 @page "/home"
 @using ClinicBookingSystem.Frontend.Services
+@using ClinicBookingSystem.Frontend.Models
 @inject AuthService AuthService
+@inject BookingService BookingService
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - Clinic Booking System</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+        Welcome to Clinic Booking System
+    </MudText>
 
-Welcome to your new app.
+    <MudGrid>
+        <!-- Book Appointment Card -->
+        <MudItem xs="12" md="8">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Class="mr-2" />
+                            Book an Appointment
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <!-- Step Indicator -->
+                    <MudTabs @bind-ActivePanelIndex="activeStep" Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                        <MudTabPanel Text="1. Select Doctor" Disabled="@(activeStep < 0)">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3">Choose a doctor for your appointment</MudText>
+                            
+                            @if (isLoadingDoctors)
+                            {
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <MudGrid>
+                                    @foreach (var doctor in doctors)
+                                    {
+                                        <MudItem xs="12" sm="6">
+                                            <MudCard Elevation="2" Class="@GetDoctorCardClass(doctor.Id)" @onclick="() => SelectDoctor(doctor)" Style="cursor: pointer;">
+                                                <MudCardContent>
+                                                    <div class="d-flex align-center">
+                                                        <MudAvatar Color="@(selectedDoctor?.Id == doctor.Id ? Color.Primary : Color.Default)" Class="mr-3">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                                        </MudAvatar>
+                                                        <div>
+                                                            <MudText Typo="Typo.subtitle1">@doctor.FullName</MudText>
+                                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@doctor.Specialization</MudText>
+                                                        </div>
+                                                        @if (selectedDoctor?.Id == doctor.Id)
+                                                        {
+                                                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="ml-auto" />
+                                                        }
+                                                    </div>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            }
+                        </MudTabPanel>
+
+                        <MudTabPanel Text="2. Select Date & Time" Disabled="@(activeStep < 1 || selectedDoctor == null)">
+                            <MudGrid>
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2">Select Date</MudText>
+                                    <MudDatePicker @bind-Date="selectedDate" 
+                                                   Label="Appointment Date" 
+                                                   MinDate="DateTime.Today"
+                                                   MaxDate="DateTime.Today.AddMonths(2)"
+                                                   Variant="Variant.Outlined"
+                                                   DateFormat="MMM dd, yyyy" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2">Available Time Slots</MudText>
+                                    @if (isLoadingTimeSlots)
+                                    {
+                                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                                    }
+                                    else if (timeSlots.Count == 0)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @(selectedDate.HasValue ? "No available slots for this date. Please select another date." : "Please select a date first.")
+                                        </MudAlert>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach (var slot in timeSlots)
+                                            {
+                                                <MudChip T="string" Color="@(selectedTimeSlot?.Id == slot.Id ? Color.Primary : Color.Default)"
+                                                         Variant="@(selectedTimeSlot?.Id == slot.Id ? Variant.Filled : Variant.Outlined)"
+                                                         OnClick="() => SelectTimeSlot(slot)"
+                                                         Style="cursor: pointer;">
+                                                    @slot.DisplayTime
+                                                </MudChip>
+                                            }
+                                        </div>
+                                    }
+                                </MudItem>
+                            </MudGrid>
+                        </MudTabPanel>
+
+                        <MudTabPanel Text="3. Confirm" Disabled="@(activeStep < 2 || selectedTimeSlot == null)">
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="appointmentReason"
+                                                  Label="Reason for Visit"
+                                                  Variant="Variant.Outlined"
+                                                  Lines="2"
+                                                  Placeholder="Brief description of your symptoms or reason for the visit..." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="appointmentNotes"
+                                                  Label="Additional Notes (Optional)"
+                                                  Variant="Variant.Outlined"
+                                                  Lines="2"
+                                                  Placeholder="Any additional information for the doctor..." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudPaper Elevation="1" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                                        <MudText Typo="Typo.h6" Class="mb-3">Appointment Summary</MudText>
+                                        <MudGrid>
+                                            <MudItem xs="6">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Doctor</MudText>
+                                                <MudText Typo="Typo.body1">@(selectedDoctor?.DisplayName ?? "Not selected")</MudText>
+                                            </MudItem>
+                                            <MudItem xs="6">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Date & Time</MudText>
+                                                <MudText Typo="Typo.body1">
+                                                    @(selectedDate.HasValue && selectedTimeSlot != null 
+                                                        ? $"{selectedDate.Value:MMM dd, yyyy} at {selectedTimeSlot.DisplayTime}" 
+                                                        : "Not selected")
+                                                </MudText>
+                                            </MudItem>
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Duration</MudText>
+                                                <MudText Typo="Typo.body1">30 minutes</MudText>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </MudTabPanel>
+                    </MudTabs>
+
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-space-between mt-4">
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Default" 
+                                   OnClick="PreviousStep"
+                                   Disabled="@(activeStep == 0)">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Class="mr-1" /> Back
+                        </MudButton>
+                        
+                        @if (activeStep < 2)
+                        {
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       OnClick="NextStep"
+                                       Disabled="@(!CanProceedToNextStep())">
+                                Next <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="ml-1" />
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Success" 
+                                       OnClick="BookAppointment"
+                                       Disabled="@(isBooking || !CanBookAppointment())">
+                                @if (isBooking)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Booking...</span>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-1" />
+                                    <span>Confirm Booking</span>
+                                }
+                            </MudButton>
+                        }
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Upcoming Appointments Card -->
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                            My Appointments
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Style="max-height: 500px; overflow-y: auto;">
+                    @if (myAppointments.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true">
+                            No upcoming appointments. Book one now!
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudList T="AppointmentModel" Dense="true">
+                            @foreach (var appointment in myAppointments)
+                            {
+                                <MudListItem>
+                                    <div class="d-flex flex-column w-100">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.subtitle2">@appointment.DoctorName</MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="@appointment.StatusColor" Variant="Variant.Filled">
+                                                @appointment.StatusDisplay
+                                            </MudChip>
+                                        </div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @appointment.DoctorSpecialization
+                                        </MudText>
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" />
+                                            @appointment.DisplayDateTime
+                                        </MudText>
+                                        @if (appointment.Status == AppointmentStatus.Scheduled)
+                                        {
+                                            <div class="mt-2">
+                                                <MudButton Size="Size.Small" 
+                                                           Variant="Variant.Text" 
+                                                           Color="Color.Error"
+                                                           OnClick="() => CancelAppointment(appointment.Id)">
+                                                    Cancel
+                                                </MudButton>
+                                            </div>
+                                        }
+                                    </div>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        </MudList>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
-    protected override void OnInitialized()
+    private int activeStep = 0;
+    private bool isLoadingDoctors = true;
+    private bool isLoadingTimeSlots = false;
+    private bool isBooking = false;
+
+    private List<DoctorModel> doctors = new();
+    private List<TimeSlotModel> timeSlots = new();
+    private List<AppointmentModel> myAppointments = new();
+
+    private DoctorModel? selectedDoctor;
+    private DateTime? _selectedDate;
+    private DateTime? selectedDate
+    {
+        get => _selectedDate;
+        set
+        {
+            if (_selectedDate != value)
+            {
+                _selectedDate = value;
+                _ = OnDateChangedAsync(value);
+            }
+        }
+    }
+    private TimeSlotModel? selectedTimeSlot;
+    private string? appointmentReason;
+    private string? appointmentNotes;
+
+    protected override async Task OnInitializedAsync()
     {
         if (!AuthService.IsAuthenticated)
         {
             NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        await LoadDoctors();
+        await LoadMyAppointments();
+    }
+
+    private async Task LoadDoctors()
+    {
+        isLoadingDoctors = true;
+        doctors = await BookingService.GetDoctorsAsync();
+        isLoadingDoctors = false;
+    }
+
+    private async Task LoadMyAppointments()
+    {
+        myAppointments = await BookingService.GetMyAppointmentsAsync();
+    }
+
+    private void SelectDoctor(DoctorModel doctor)
+    {
+        selectedDoctor = doctor;
+        // Reset subsequent selections
+        _selectedDate = null;
+        selectedTimeSlot = null;
+        timeSlots.Clear();
+    }
+
+    private string GetDoctorCardClass(int doctorId)
+    {
+        return selectedDoctor?.Id == doctorId 
+            ? "border-2 mud-border-primary" 
+            : "";
+    }
+
+    private async Task OnDateChangedAsync(DateTime? date)
+    {
+        selectedTimeSlot = null;
+        
+        if (date.HasValue && selectedDoctor != null)
+        {
+            await LoadTimeSlots();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadTimeSlots()
+    {
+        if (selectedDoctor == null || !_selectedDate.HasValue)
+            return;
+
+        isLoadingTimeSlots = true;
+        StateHasChanged();
+        
+        timeSlots = await BookingService.GetAvailableTimeSlotsAsync(selectedDoctor.Id, _selectedDate.Value);
+        
+        isLoadingTimeSlots = false;
+        StateHasChanged();
+    }
+
+    private void SelectTimeSlot(TimeSlotModel slot)
+    {
+        selectedTimeSlot = slot;
+    }
+
+    private bool CanProceedToNextStep()
+    {
+        return activeStep switch
+        {
+            0 => selectedDoctor != null,
+            1 => _selectedDate.HasValue && selectedTimeSlot != null,
+            _ => true
+        };
+    }
+
+    private bool CanBookAppointment()
+    {
+        return selectedDoctor != null && 
+               _selectedDate.HasValue && 
+               selectedTimeSlot != null;
+    }
+
+    private void NextStep()
+    {
+        if (CanProceedToNextStep() && activeStep < 2)
+        {
+            activeStep++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (activeStep > 0)
+        {
+            activeStep--;
+        }
+    }
+
+    private async Task BookAppointment()
+    {
+        if (!CanBookAppointment())
+            return;
+
+        isBooking = true;
+
+        try
+        {
+            var request = new CreateAppointmentRequest
+            {
+                DoctorId = selectedDoctor!.Id,
+                AppointmentDate = _selectedDate!.Value,
+                AppointmentTime = selectedTimeSlot!.StartTime,
+                DurationInMinutes = 30,
+                Reason = appointmentReason,
+                Notes = appointmentNotes
+            };
+
+            var (success, message, appointment) = await BookingService.BookAppointmentAsync(request);
+
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                
+                // Reset form
+                activeStep = 0;
+                selectedDoctor = null;
+                _selectedDate = null;
+                selectedTimeSlot = null;
+                appointmentReason = null;
+                appointmentNotes = null;
+                timeSlots.Clear();
+
+                // Reload appointments
+                await LoadMyAppointments();
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isBooking = false;
+        }
+    }
+
+    private async Task CancelAppointment(int appointmentId)
+    {
+        var (success, message) = await BookingService.CancelAppointmentAsync(appointmentId);
+        
+        if (success)
+        {
+            Snackbar.Add(message, Severity.Success);
+            await LoadMyAppointments();
+        }
+        else
+        {
+            Snackbar.Add(message, Severity.Error);
         }
     }
 }
