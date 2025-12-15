@@ -12,6 +12,89 @@
 
 <PageTitle>Dashboard - Clinic Booking System</PageTitle>
 
+@if (hasError)
+{
+    <!-- Error Boundary UI -->
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="py-8">
+        <MudPaper Elevation="0" Class="pa-8 rounded-lg text-center" Style="border: 2px dashed #f44336; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" 
+                     Style="font-size: 5rem; color: #f44336; opacity: 0.8;" />
+            
+            <MudText Typo="Typo.h5" Class="mt-4" Style="color: #c62828; font-weight: 600;">
+                Oops! Something went wrong
+            </MudText>
+            
+            <MudText Typo="Typo.body1" Class="mt-2" Style="color: #666; max-width: 500px; margin: 0 auto;">
+                @errorMessage
+            </MudText>
+            
+            @if (!string.IsNullOrEmpty(errorDetails))
+            {
+                <MudExpansionPanels Class="mt-4" Style="max-width: 600px; margin: 0 auto;">
+                    <MudExpansionPanel Text="Technical Details" Style="background: rgba(255,255,255,0.7);">
+                        <MudText Typo="Typo.caption" Style="color: #888; font-family: monospace; text-align: left; word-break: break-all;">
+                            @errorDetails
+                        </MudText>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            }
+            
+            <div class="d-flex justify-center gap-3 mt-6">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="RetryLoading"
+                           Disabled="@isRetrying"
+                           Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    @if (isRetrying)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
+                        <span>Retrying...</span>
+                    }
+                    else
+                    {
+                        <span>Try Again</span>
+                    }
+                </MudButton>
+                
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Default"
+                           StartIcon="@Icons.Material.Filled.Home"
+                           OnClick="@(() => NavigationManager.NavigateTo("/", true))">
+                    Refresh Page
+                </MudButton>
+            </div>
+            
+            <MudText Typo="Typo.caption" Class="mt-4" Style="color: #888;">
+                If the problem persists, please contact support or try again later.
+            </MudText>
+        </MudPaper>
+        
+        <!-- Helpful Tips -->
+        <MudPaper Elevation="0" Class="pa-4 mt-4 rounded-lg" Style="border: 1px solid #e0e0e0; background: #fafafa;">
+            <div class="d-flex align-center gap-2 mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Style="color: #ffc107;" />
+                <MudText Typo="Typo.subtitle2" Style="font-weight: 600;">Troubleshooting Tips</MudText>
+            </div>
+            <MudList T="string" Dense="true">
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" IconSize="Size.Small">
+                    <MudText Typo="Typo.body2">Check your internet connection</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" IconSize="Size.Small">
+                    <MudText Typo="Typo.body2">Make sure the backend server is running</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" IconSize="Size.Small">
+                    <MudText Typo="Typo.body2">Clear browser cache and cookies</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" IconSize="Size.Small">
+                    <MudText Typo="Typo.body2">Try logging out and logging back in</MudText>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </MudContainer>
+}
+else
+{
 <!-- Hero Section -->
 <div class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 0; margin-bottom: 2rem;">
     <MudContainer MaxWidth="MaxWidth.Large">
@@ -548,6 +631,7 @@
         </MudItem>
     </MudGrid>
 </MudContainer>
+}
 
 @code {
     private int activeStep = 0;
@@ -556,6 +640,12 @@
     private bool isBooking = false;
     private bool isSearchingPatients = false;
     private bool hasSearchedPatients = false;
+    
+    // Error handling states
+    private bool hasError = false;
+    private bool isRetrying = false;
+    private string errorMessage = string.Empty;
+    private string errorDetails = string.Empty;
 
     // Pagination for appointments
     private int appointmentCurrentPage = 1;
@@ -605,8 +695,67 @@
             return;
         }
 
-        await LoadDoctors();
-        await LoadMyAppointments();
+        await LoadInitialData();
+    }
+    
+    private async Task LoadInitialData()
+    {
+        try
+        {
+            hasError = false;
+            errorMessage = string.Empty;
+            errorDetails = string.Empty;
+            
+            await LoadDoctors();
+            await LoadMyAppointments();
+            
+            // Check if we got any data or if services might be down
+            if (!doctors.Any() && !myAppointments.Any())
+            {
+                // This might indicate a silent failure - services returned empty but didn't throw
+                Console.WriteLine("Warning: Both doctors and appointments lists are empty. Services may be unavailable.");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            hasError = true;
+            errorMessage = "Unable to connect to the server. Please check if the backend service is running.";
+            errorDetails = $"Network Error: {ex.Message}";
+            Console.WriteLine($"HttpRequestException: {ex}");
+        }
+        catch (TaskCanceledException ex)
+        {
+            hasError = true;
+            errorMessage = "The request timed out. The server might be slow or unreachable.";
+            errorDetails = $"Timeout: {ex.Message}";
+            Console.WriteLine($"TaskCanceledException: {ex}");
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = "An unexpected error occurred while loading your dashboard data.";
+            errorDetails = $"{ex.GetType().Name}: {ex.Message}";
+            Console.WriteLine($"Exception: {ex}");
+        }
+        finally
+        {
+            isLoadingDoctors = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task RetryLoading()
+    {
+        isRetrying = true;
+        StateHasChanged();
+        
+        // Small delay for UX
+        await Task.Delay(500);
+        
+        await LoadInitialData();
+        
+        isRetrying = false;
+        StateHasChanged();
     }
 
     private async Task LoadDoctors()
