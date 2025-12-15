@@ -322,7 +322,27 @@ dotnet run
 
 The API will start on `http://localhost:5220` (HTTP) and `https://localhost:7220` (HTTPS).
 
-#### 2. Run the Frontend (Blazor WASM)
+#### 3. Access Swagger Documentation
+
+Once the backend is running, open your browser and navigate to:
+
+```
+http://localhost:5220/swagger
+```
+
+or
+
+```
+https://localhost:7220/swagger
+```
+
+Swagger UI provides:
+- Interactive API documentation
+- Test endpoints directly from the browser
+- JWT Bearer token authentication support
+- Request/Response examples
+
+#### 4. Run the Frontend (Blazor WASM)
 
 Open a **new terminal** and navigate to the Frontend directory:
 
