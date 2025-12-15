@@ -301,11 +301,46 @@ Response: 200 OK
 ## 🚀 Getting Started
 
 ### Prerequisites
-- .NET 8.0 SDK or later
-- Node.js 18+ (for frontend)
-- SQL Server or other supported database
+- .NET 9.0 SDK or later
+- A modern web browser
 
-### Backend Setup
+### Quick Start - Running the Application
+
+#### 1. Run the Backend API
+
+Open a terminal and navigate to the Backend API directory:
+
+```bash
+cd Backend/src/ClinicBookingSystem.API
+```
+
+Then run the API:
+
+```bash
+dotnet run
+```
+
+The API will start on `http://localhost:5220` (HTTP) and `https://localhost:7220` (HTTPS).
+
+#### 2. Run the Frontend (Blazor WASM)
+
+Open a **new terminal** and navigate to the Frontend directory:
+
+```bash
+cd Frontend
+```
+
+Then run the frontend:
+
+```bash
+dotnet run
+```
+
+The frontend will start on `http://localhost:5173` (or similar port). Open this URL in your browser.
+
+> **Note**: Make sure the Backend API is running before using the Frontend.
+
+### Backend Setup (Development)
 
 1. **Create ASP.NET Core Web API project**
    ```bash
@@ -365,19 +400,66 @@ Response: 200 OK
 
 ## 🧪 Running Tests
 
+The project uses **xUnit** as the testing framework and **Moq** for mocking dependencies.
+
 ### Run All Tests
+
+Navigate to the Backend directory and run:
+
 ```bash
+cd Backend
 dotnet test
 ```
 
-### Run Specific Test Project
+### Run Specific Test Projects
+
+**Application Tests (Unit Tests for Services):**
+
 ```bash
-dotnet test Backend/tests/ClinicBookingSystem.Application.Tests/
+cd Backend/tests/ClinicBookingSystem.Application.Tests
+dotnet test
+```
+
+**Infrastructure Tests:**
+
+```bash
+cd Backend/tests/ClinicBookingSystem.Infrastructure.Tests
+dotnet test
+```
+
+### Run Tests with Verbose Output
+
+```bash
+cd Backend
+dotnet test --verbosity normal
 ```
 
 ### Run Tests with Coverage
+
 ```bash
+cd Backend
 dotnet test /p:CollectCoverage=true
+```
+
+### Test Summary
+
+The project includes **35 unit tests** covering critical booking logic:
+
+| Test Category | Tests | Description |
+|--------------|-------|-------------|
+| Appointment Booking | 10 | Valid booking, validation errors, double-booking prevention |
+| Time Slot Availability | 12 | Available slots, slot generation, booking conflicts |
+| Appointment Management | 13 | Get, cancel, update appointments |
+
+### Key Test: Double Booking Prevention
+
+```csharp
+[Fact]
+public async Task ScheduleAppointmentAsync_WhenDoubleBooking_ShouldThrowInvalidOperationException()
+{
+    // This critical test ensures no double bookings occur
+    // It verifies the HasConflictAsync() validation
+}
 ```
 
 ### Test Structure
@@ -448,5 +530,5 @@ For issues or questions, please create an issue in the repository.
 
 ---
 
-**Last Updated**: December 13, 2024  
+**Last Updated**: December 15, 2025  
 **Version**: 1.0.0
