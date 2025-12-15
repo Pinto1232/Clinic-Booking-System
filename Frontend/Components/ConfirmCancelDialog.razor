@@ -1,0 +1,37 @@
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
+            @Title
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mt-2">@ContentText</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">No, Keep it</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] 
+    public string ContentText { get; set; } = "Are you sure you want to cancel?";
+
+    [Parameter] 
+    public string ButtonText { get; set; } = "Yes";
+
+    [Parameter] 
+    public Color Color { get; set; } = Color.Error;
+
+    [Parameter]
+    public string Title { get; set; } = "Confirm";
+
+    private void Submit() => MudDialog?.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog?.Cancel();
+}

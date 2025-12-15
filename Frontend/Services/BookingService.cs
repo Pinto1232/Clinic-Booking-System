@@ -229,7 +229,7 @@ public class BookingService
         try
         {
             var request = new { CancellationReason = reason };
-            var response = await _httpClient.PostAsJsonAsync($"api/appointments/{appointmentId}/cancel", request);
+            var response = await _httpClient.PatchAsJsonAsync($"api/appointments/{appointmentId}/cancel", request);
             
             if (response.IsSuccessStatusCode)
             {
@@ -262,6 +262,52 @@ public class BookingService
             {
                 var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
                 return (false, error?.Message ?? "Failed to confirm appointment.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    // Complete an appointment
+    public async Task<(bool Success, string Message)> CompleteAppointmentAsync(int appointmentId)
+    {
+        try
+        {
+            var response = await _httpClient.PatchAsync($"api/appointments/{appointmentId}/complete", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Appointment marked as completed.");
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to complete appointment.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    // Restore a cancelled appointment
+    public async Task<(bool Success, string Message)> RestoreAppointmentAsync(int appointmentId)
+    {
+        try
+        {
+            var response = await _httpClient.PatchAsync($"api/appointments/{appointmentId}/restore", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Appointment restored successfully.");
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to restore appointment.");
             }
         }
         catch (Exception ex)

@@ -17,6 +17,7 @@ public interface IAppointmentService
     Task<Appointment> ConfirmAppointmentAsync(int id);
     Task<Appointment> CompleteAppointmentAsync(int id);
     Task<Appointment> CancelAppointmentAsync(int id, string? cancellationReason);
+    Task<Appointment> RestoreAppointmentAsync(int id);
     Task<Appointment> MarkAsNoShowAsync(int id);
     Task<bool> DeleteAppointmentAsync(int id);
 }

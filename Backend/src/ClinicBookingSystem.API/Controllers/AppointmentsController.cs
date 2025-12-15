@@ -277,6 +277,26 @@ public class AppointmentsController : ControllerBase
         }
     }
 
+    [HttpPatch("{id}/restore")]
+    public async Task<ActionResult<AppointmentResponse>> RestoreAppointment(int id)
+    {
+        try
+        {
+            var appointment = await _appointmentService.RestoreAppointmentAsync(id);
+            return Ok(MapToResponse(appointment));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation when restoring appointment");
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error restoring appointment");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPatch("{id}/no-show")]
     public async Task<ActionResult<AppointmentResponse>> MarkAsNoShow(int id)
     {

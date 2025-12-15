@@ -6,6 +6,8 @@
 @inject BookingService BookingService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 
 <PageTitle>Dashboard - Clinic Booking System</PageTitle>
 
@@ -25,7 +27,7 @@
                 <MudButton Variant="Variant.Filled" 
                            Style="background-color: white; color: #667eea;"
                            StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => activeStep = 0)">
+                           OnClick="StartNewAppointment">
                     New Appointment
                 </MudButton>
                 <MudButton Variant="Variant.Outlined" 
@@ -88,10 +90,83 @@
         </MudItem>
     </MudGrid>
 
+    <!-- Patient Search Card -->
+    <MudPaper Elevation="0" Class="rounded-lg overflow-hidden mb-4" Style="border: 1px solid #e0e0e0;">
+        <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Primary" />
+                <MudText Typo="Typo.h6" Style="font-weight: 600;">Search Patients</MudText>
+            </div>
+        </div>
+        
+        <div class="pa-4 pa-md-6">
+            <MudGrid Spacing="3" Class="align-center">
+                <MudItem xs="12" sm="8" md="6">
+                    <MudTextField @bind-Value="patientSearchText" 
+                                  Placeholder="Search by name or email..."
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Immediate="true"
+                                  OnKeyDown="OnPatientSearchKeyDown"
+                                  Style="background: white;" />
+                </MudItem>
+                <MudItem xs="12" sm="4" md="2">
+                    <MudButton Variant="Variant.Filled" 
+                               OnClick="SearchPatients"
+                               Disabled="@(isSearchingPatients || string.IsNullOrWhiteSpace(patientSearchText))"
+                               FullWidth="true"
+                               Style="height: 56px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        @if (isSearchingPatients)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-1" />
+                        }
+                        Search
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            @if (searchedPatients.Any())
+            {
+                <MudTable Items="@searchedPatients" Hover="true" Dense="true" Class="mt-4" Elevation="0" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <HeaderContent>
+                        <MudTh Style="background: #fafafa; font-weight: 600;">Name</MudTh>
+                        <MudTh Style="background: #fafafa; font-weight: 600;">Email</MudTh>
+                        <MudTh Style="background: #fafafa; font-weight: 600;">Phone</MudTh>
+                        <MudTh Style="background: #fafafa; font-weight: 600;">Registered</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name">
+                            <div class="d-flex align-center gap-2">
+                                <MudAvatar Size="Size.Small" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.75rem;">
+                                    @context.FirstName[0]@context.LastName[0]
+                                </MudAvatar>
+                                <MudText Style="font-weight: 500;">@context.FullName</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Email">@context.Email</MudTd>
+                        <MudTd DataLabel="Phone">@(context.PhoneNumber ?? "—")</MudTd>
+                        <MudTd DataLabel="Registered">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (hasSearchedPatients && !searchedPatients.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-4">
+                    No patients found matching "@patientSearchText"
+                </MudAlert>
+            }
+        </div>
+    </MudPaper>
+
     <MudGrid Spacing="4">
         <!-- Book Appointment Card -->
         <MudItem xs="12" lg="8">
-            <MudPaper Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0;">
+            <MudPaper id="booking-card" Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0;">
                 <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
                     <div class="d-flex align-center gap-2">
                         <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" />
@@ -391,9 +466,16 @@
                                     <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Style="color: #9e9e9e;" />
                                     <MudText Typo="Typo.body2" Style="color: #666;">@appointment.DisplayDateTime</MudText>
                                 </div>
-                                @if (appointment.Status == AppointmentStatus.Scheduled)
+                                @if (appointment.Status == AppointmentStatus.Scheduled || appointment.Status == AppointmentStatus.Confirmed)
                                 {
-                                    <div class="mt-2 ml-10">
+                                    <div class="mt-2 ml-10 d-flex gap-2">
+                                        <MudButton Size="Size.Small" 
+                                                   Variant="Variant.Text" 
+                                                   Color="Color.Success"
+                                                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                                                   OnClick="() => CompleteAppointment(appointment.Id)">
+                                            Complete
+                                        </MudButton>
                                         <MudButton Size="Size.Small" 
                                                    Variant="Variant.Text" 
                                                    Color="Color.Error"
@@ -403,83 +485,20 @@
                                         </MudButton>
                                     </div>
                                 }
+                                @if (appointment.Status == AppointmentStatus.Cancelled && appointment.AppointmentDate.Date >= DateTime.Today)
+                                {
+                                    <div class="mt-2 ml-10">
+                                        <MudButton Size="Size.Small" 
+                                                   Variant="Variant.Text" 
+                                                   Color="Color.Success"
+                                                   StartIcon="@Icons.Material.Filled.Restore"
+                                                   OnClick="() => RestoreAppointment(appointment.Id)">
+                                            Restore
+                                        </MudButton>
+                                    </div>
+                                }
                             </div>
                         }
-                    }
-                </div>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Patient Search Card -->
-        <MudItem xs="12">
-            <MudPaper Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0;">
-                <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
-                    <div class="d-flex align-center gap-2">
-                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Primary" />
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">Search Patients</MudText>
-                    </div>
-                </div>
-                
-                <div class="pa-4 pa-md-6">
-                    <MudGrid Spacing="3" Class="align-center">
-                        <MudItem xs="12" sm="8" md="6">
-                            <MudTextField @bind-Value="patientSearchText" 
-                                          Placeholder="Search by name or email..."
-                                          Variant="Variant.Outlined"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Search"
-                                          Immediate="true"
-                                          OnKeyDown="OnPatientSearchKeyDown"
-                                          Style="background: white;" />
-                        </MudItem>
-                        <MudItem xs="12" sm="4" md="2">
-                            <MudButton Variant="Variant.Filled" 
-                                       OnClick="SearchPatients"
-                                       Disabled="@(isSearchingPatients || string.IsNullOrWhiteSpace(patientSearchText))"
-                                       FullWidth="true"
-                                       Style="height: 56px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                @if (isSearchingPatients)
-                                {
-                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-1" />
-                                }
-                                Search
-                            </MudButton>
-                        </MudItem>
-                    </MudGrid>
-
-                    @if (searchedPatients.Any())
-                    {
-                        <MudTable Items="@searchedPatients" Hover="true" Dense="true" Class="mt-4" Elevation="0" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
-                            <HeaderContent>
-                                <MudTh Style="background: #fafafa; font-weight: 600;">Name</MudTh>
-                                <MudTh Style="background: #fafafa; font-weight: 600;">Email</MudTh>
-                                <MudTh Style="background: #fafafa; font-weight: 600;">Phone</MudTh>
-                                <MudTh Style="background: #fafafa; font-weight: 600;">Registered</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudAvatar Size="Size.Small" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.75rem;">
-                                            @context.FirstName[0]@context.LastName[0]
-                                        </MudAvatar>
-                                        <MudText Style="font-weight: 500;">@context.FullName</MudText>
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="Email">@context.Email</MudTd>
-                                <MudTd DataLabel="Phone">@(context.PhoneNumber ?? "—")</MudTd>
-                                <MudTd DataLabel="Registered">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
-                    else if (hasSearchedPatients && !searchedPatients.Any())
-                    {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-4">
-                            No patients found matching "@patientSearchText"
-                        </MudAlert>
                     }
                 </div>
             </MudPaper>
@@ -557,6 +576,24 @@
         _selectedDate = null;
         selectedTimeSlot = null;
         timeSlots.Clear();
+    }
+
+    private async Task StartNewAppointment()
+    {
+        // Reset all form fields for a fresh start
+        activeStep = 0;
+        selectedDoctor = null;
+        _selectedDate = null;
+        selectedTimeSlot = null;
+        appointmentReason = null;
+        appointmentNotes = null;
+        doctorSearchText = string.Empty;
+        timeSlots.Clear();
+        
+        // Scroll to the booking card
+        await JSRuntime.InvokeVoidAsync("scrollToElement", "booking-card");
+        
+        StateHasChanged();
     }
 
     private async Task OnDateChangedAsync(DateTime? date)
@@ -674,16 +711,106 @@
 
     private async Task CancelAppointment(int appointmentId)
     {
-        var (success, message) = await BookingService.CancelAppointmentAsync(appointmentId);
-        
-        if (success)
+        var parameters = new DialogParameters<ConfirmCancelDialog>
         {
-            Snackbar.Add(message, Severity.Success);
-            await LoadMyAppointments();
+            { x => x.ContentText, "Are you sure you want to cancel this appointment? This action cannot be undone." },
+            { x => x.ButtonText, "Yes, Cancel" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmCancelDialog>("Cancel Appointment", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var (success, message) = await BookingService.CancelAppointmentAsync(appointmentId);
+            
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                await LoadMyAppointments();
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
         }
-        else
+    }
+
+    private async Task CompleteAppointment(int appointmentId)
+    {
+        var parameters = new DialogParameters<ConfirmCancelDialog>
         {
-            Snackbar.Add(message, Severity.Error);
+            { x => x.ContentText, "Mark this appointment as completed?" },
+            { x => x.ButtonText, "Yes, Complete" },
+            { x => x.Color, Color.Success }
+        };
+
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmCancelDialog>("Complete Appointment", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var (success, message) = await BookingService.CompleteAppointmentAsync(appointmentId);
+            
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                await LoadMyAppointments();
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task RestoreAppointment(int appointmentId)
+    {
+        var parameters = new DialogParameters<ConfirmCancelDialog>
+        {
+            { x => x.ContentText, "Do you want to restore this cancelled appointment?" },
+            { x => x.ButtonText, "Yes, Restore" },
+            { x => x.Color, Color.Success }
+        };
+
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmCancelDialog>("Restore Appointment", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var (success, message) = await BookingService.RestoreAppointmentAsync(appointmentId);
+            
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                await LoadMyAppointments();
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
         }
     }
 

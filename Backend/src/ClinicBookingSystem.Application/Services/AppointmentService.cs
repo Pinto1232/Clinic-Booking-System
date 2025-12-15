@@ -225,6 +225,27 @@ public class AppointmentService : IAppointmentService
         return await _appointmentRepository.UpdateAsync(appointment);
     }
 
+    public async Task<Appointment> RestoreAppointmentAsync(int id)
+    {
+        var appointment = await GetAppointmentByIdAsync(id);
+        if (appointment == null)
+            throw new InvalidOperationException($"Appointment with ID {id} not found");
+
+        if (appointment.Status != AppointmentStatus.Cancelled)
+            throw new InvalidOperationException("Only cancelled appointments can be restored");
+
+        // Check if the appointment date is in the past
+        if (appointment.AppointmentDate.Date < DateTime.Today)
+            throw new InvalidOperationException("Cannot restore an appointment with a past date");
+
+        appointment.Status = AppointmentStatus.Scheduled;
+        appointment.CancelledAt = null;
+        appointment.CancellationReason = null;
+        appointment.UpdatedAt = DateTime.UtcNow;
+
+        return await _appointmentRepository.UpdateAsync(appointment);
+    }
+
     public async Task<Appointment> MarkAsNoShowAsync(int id)
     {
         var appointment = await GetAppointmentByIdAsync(id);
