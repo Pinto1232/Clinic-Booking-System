@@ -129,50 +129,83 @@ else
     <!-- Quick Stats -->
     <MudGrid Class="mb-6">
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg stat-card" Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="d-flex align-center justify-space-between">
                     <div>
-                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count(a => a.Status == AppointmentStatus.Scheduled)</MudText>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;" Class="counter-number">@animatedUpcoming</MudText>
                         <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Upcoming</MudText>
                     </div>
-                    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" Class="stat-icon" />
                 </div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg stat-card" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="d-flex align-center justify-space-between">
                     <div>
-                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count(a => a.Status == AppointmentStatus.Completed)</MudText>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;" Class="counter-number">@animatedCompleted</MudText>
                         <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Completed</MudText>
                     </div>
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" Class="stat-icon" />
                 </div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg stat-card" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="d-flex align-center justify-space-between">
                     <div>
-                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@doctors.Count</MudText>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;" Class="counter-number">@animatedDoctors</MudText>
                         <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Doctors</MudText>
                     </div>
-                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" Class="stat-icon" />
                 </div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg stat-card" Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="d-flex align-center justify-space-between">
                     <div>
-                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count</MudText>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;" Class="counter-number">@animatedTotalVisits</MudText>
                         <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Total Visits</MudText>
                     </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" Class="stat-icon" />
                 </div>
             </MudPaper>
         </MudItem>
     </MudGrid>
+
+    <style>
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1);
+        }
+        
+        .counter-number {
+            transition: transform 0.2s ease;
+        }
+        
+        @@keyframes countPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .counting {
+            animation: countPulse 0.1s ease;
+        }
+    </style>
 
     <!-- Patient Search Card -->
     <MudPaper Elevation="0" Class="rounded-lg overflow-hidden mb-4" Style="border: 1px solid #e0e0e0;">
@@ -646,6 +679,13 @@ else
     private bool isRetrying = false;
     private string errorMessage = string.Empty;
     private string errorDetails = string.Empty;
+    
+    // Animated counter states
+    private int animatedUpcoming = 0;
+    private int animatedCompleted = 0;
+    private int animatedDoctors = 0;
+    private int animatedTotalVisits = 0;
+    private bool hasAnimated = false;
 
     // Pagination for appointments
     private int appointmentCurrentPage = 1;
@@ -709,6 +749,12 @@ else
             await LoadDoctors();
             await LoadMyAppointments();
             
+            // Start counter animation after data is loaded
+            if (!hasAnimated)
+            {
+                _ = AnimateCounters();
+            }
+            
             // Check if we got any data or if services might be down
             if (!doctors.Any() && !myAppointments.Any())
             {
@@ -747,6 +793,7 @@ else
     private async Task RetryLoading()
     {
         isRetrying = true;
+        hasAnimated = false; // Reset animation on retry
         StateHasChanged();
         
         // Small delay for UX
@@ -757,6 +804,45 @@ else
         isRetrying = false;
         StateHasChanged();
     }
+    
+    private async Task AnimateCounters()
+    {
+        hasAnimated = true;
+        
+        // Target values
+        int targetUpcoming = myAppointments.Count(a => a.Status == AppointmentStatus.Scheduled);
+        int targetCompleted = myAppointments.Count(a => a.Status == AppointmentStatus.Completed);
+        int targetDoctors = doctors.Count;
+        int targetTotalVisits = myAppointments.Count;
+        
+        // Animation duration and steps
+        int animationDuration = 1000; // 1 second total
+        int steps = 30; // Number of animation frames
+        int stepDelay = animationDuration / steps;
+        
+        for (int i = 1; i <= steps; i++)
+        {
+            double progress = EaseOutQuad((double)i / steps);
+            
+            animatedUpcoming = (int)(targetUpcoming * progress);
+            animatedCompleted = (int)(targetCompleted * progress);
+            animatedDoctors = (int)(targetDoctors * progress);
+            animatedTotalVisits = (int)(targetTotalVisits * progress);
+            
+            StateHasChanged();
+            await Task.Delay(stepDelay);
+        }
+        
+        // Ensure final values are exact
+        animatedUpcoming = targetUpcoming;
+        animatedCompleted = targetCompleted;
+        animatedDoctors = targetDoctors;
+        animatedTotalVisits = targetTotalVisits;
+        StateHasChanged();
+    }
+    
+    // Easing function for smooth animation (ease-out quad)
+    private double EaseOutQuad(double t) => t * (2 - t);
 
     private async Task LoadDoctors()
     {
