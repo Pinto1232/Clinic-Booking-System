@@ -331,6 +331,91 @@ public class BookingService
         }
     }
 
+    // Create a new doctor
+    public async Task<(bool Success, string Message, DoctorModel? Doctor)> CreateDoctorAsync(CreateDoctorRequest request)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/doctors", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var doctorResponse = await response.Content.ReadFromJsonAsync<DoctorResponse>();
+                if (doctorResponse != null)
+                {
+                    var doctor = new DoctorModel
+                    {
+                        Id = doctorResponse.Id,
+                        FirstName = doctorResponse.FirstName,
+                        LastName = doctorResponse.LastName,
+                        Email = doctorResponse.Email,
+                        PhoneNumber = doctorResponse.PhoneNumber,
+                        Specialization = doctorResponse.Specialization,
+                        IsAvailable = doctorResponse.IsAvailable
+                    };
+                    return (true, "Doctor created successfully.", doctor);
+                }
+                return (true, "Doctor created successfully.", null);
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to create doctor.", null);
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"An error occurred: {ex.Message}", null);
+        }
+    }
+
+    // Get all doctors (including unavailable)
+    public async Task<List<DoctorModel>> GetAllDoctorsAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/doctors");
+            return response?.Select(d => new DoctorModel
+            {
+                Id = d.Id,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Email = d.Email,
+                PhoneNumber = d.PhoneNumber,
+                Specialization = d.Specialization,
+                IsAvailable = d.IsAvailable
+            }).ToList() ?? new List<DoctorModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching all doctors: {ex.Message}");
+            return new List<DoctorModel>();
+        }
+    }
+
+    // Delete a doctor
+    public async Task<(bool Success, string Message)> DeleteDoctorAsync(int doctorId)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"api/doctors/{doctorId}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Doctor deleted successfully.");
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                return (false, error?.Message ?? "Failed to delete doctor.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"An error occurred: {ex.Message}");
+        }
+    }
+
     private AppointmentModel MapToAppointmentModel(AppointmentResponse response)
     {
         return new AppointmentModel
@@ -394,4 +479,14 @@ public class AppointmentResponse
 public class ErrorResponse
 {
     public string? Message { get; set; }
+}
+
+public class CreateDoctorRequest
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string Specialization { get; set; } = string.Empty;
+    public string? LicenseNumber { get; set; }
 }

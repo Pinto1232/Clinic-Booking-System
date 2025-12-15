@@ -1,0 +1,165 @@
+@using ClinicBookingSystem.Frontend.Services
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@isFormValid">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="FirstName" 
+                                  Label="First Name" 
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="First name is required"
+                                  Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="LastName" 
+                                  Label="Last Name" 
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Last name is required"
+                                  Immediate="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Email" 
+                                  Label="Email" 
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email"
+                                  Required="true"
+                                  RequiredError="Email is required"
+                                  Validation="@(new EmailAddressAttribute() { ErrorMessage = "Invalid email address" })"
+                                  Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="PhoneNumber" 
+                                  Label="Phone Number" 
+                                  Variant="Variant.Outlined"
+                                  Placeholder="(Optional)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="LicenseNumber" 
+                                  Label="License Number" 
+                                  Variant="Variant.Outlined"
+                                  Placeholder="(Optional)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect @bind-Value="Specialization" 
+                               Label="Specialization" 
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Specialization is required"
+                               AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var spec in Specializations)
+                        {
+                            <MudSelectItem Value="@spec">@spec</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (!string.IsNullOrEmpty(CustomSpecialization) || Specialization == "Other")
+                {
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="CustomSpecialization" 
+                                      Label="Custom Specialization" 
+                                      Variant="Variant.Outlined"
+                                      Placeholder="Enter custom specialization"
+                                      Immediate="true" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="Submit"
+                   Disabled="@(!isFormValid || isSubmitting)"
+                   Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            @if (isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
+                <span>Adding...</span>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-1" />
+                <span>Add Doctor</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    private MudDialogInstance? MudDialog { get; set; }
+
+    private MudForm? form;
+    private bool isFormValid;
+    private bool isSubmitting;
+
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string? LicenseNumber { get; set; }
+    public string Specialization { get; set; } = string.Empty;
+    public string CustomSpecialization { get; set; } = string.Empty;
+
+    private readonly List<string> Specializations = new()
+    {
+        "General Medicine",
+        "Pediatrics",
+        "Cardiology",
+        "Dermatology",
+        "Orthopedics",
+        "Neurology",
+        "Psychiatry",
+        "Gynecology",
+        "Ophthalmology",
+        "ENT (Ear, Nose, Throat)",
+        "Gastroenterology",
+        "Pulmonology",
+        "Endocrinology",
+        "Rheumatology",
+        "Urology",
+        "Oncology",
+        "Radiology",
+        "Anesthesiology",
+        "Emergency Medicine",
+        "Family Medicine",
+        "Internal Medicine",
+        "Sports Medicine",
+        "Other"
+    };
+
+    private void Cancel() => MudDialog?.Cancel();
+
+    private async Task Submit()
+    {
+        if (form != null)
+        {
+            await form.Validate();
+            if (!isFormValid) return;
+        }
+
+        isSubmitting = true;
+        StateHasChanged();
+
+        var finalSpecialization = Specialization == "Other" && !string.IsNullOrWhiteSpace(CustomSpecialization)
+            ? CustomSpecialization
+            : Specialization;
+
+        var request = new CreateDoctorRequest
+        {
+            FirstName = FirstName,
+            LastName = LastName,
+            Email = Email,
+            PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber,
+            LicenseNumber = string.IsNullOrWhiteSpace(LicenseNumber) ? null : LicenseNumber,
+            Specialization = finalSpecialization
+        };
+
+        MudDialog?.Close(DialogResult.Ok(request));
+    }
+}

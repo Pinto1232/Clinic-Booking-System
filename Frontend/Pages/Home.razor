@@ -2,6 +2,7 @@
 @page "/home"
 @using ClinicBookingSystem.Frontend.Services
 @using ClinicBookingSystem.Frontend.Models
+@using ClinicBookingSystem.Frontend.Components
 @inject AuthService AuthService
 @inject BookingService BookingService
 @inject NavigationManager NavigationManager
@@ -211,14 +212,21 @@
                     <!-- Step 1: Select Doctor -->
                     @if (activeStep == 0)
                     {
-                        <MudTextField @bind-Value="doctorSearchText" 
-                                      Placeholder="Search doctors by name or specialization..."
-                                      Variant="Variant.Outlined"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Search"
-                                      Immediate="true"
-                                      Class="mb-4"
-                                      Style="background: white;" />
+                        <div class="d-flex gap-3 mb-4 flex-wrap">
+                            <MudTextField @bind-Value="doctorSearchText" 
+                                          Placeholder="Search doctors by name or specialization..."
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          Immediate="true"
+                                          Style="flex: 1; min-width: 250px;" />
+                            <MudButton Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                                       OnClick="OpenAddDoctorDialog"
+                                       Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); height: 56px;">
+                                Add Doctor
+                            </MudButton>
+                        </div>
                         
                         @if (isLoadingDoctors)
                         {
@@ -434,10 +442,10 @@
                     </div>
                 </div>
                 
-                <div style="max-height: 480px; overflow-y: auto;">
+                <div style="min-height: 400px; display: flex; flex-direction: column;">
                     @if (myAppointments.Count == 0)
                     {
-                        <div class="pa-6 text-center">
+                        <div class="pa-6 text-center flex-grow-1 d-flex flex-column justify-center">
                             <MudIcon Icon="@Icons.Material.Filled.EventBusy" Style="font-size: 4rem; color: #e0e0e0;" />
                             <MudText Typo="Typo.body1" Class="mt-2" Style="color: #9e9e9e;">No appointments yet</MudText>
                             <MudText Typo="Typo.caption" Style="color: #bdbdbd;">Book your first appointment above</MudText>
@@ -445,58 +453,93 @@
                     }
                     else
                     {
-                        @foreach (var appointment in myAppointments)
-                        {
-                            <div class="pa-4" style="border-bottom: 1px solid #f0f0f0;">
-                                <div class="d-flex justify-space-between align-start mb-2">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudAvatar Size="Size.Small" Style="background: #e8eaf6; color: #667eea;">
-                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
-                                        </MudAvatar>
-                                        <div>
-                                            <MudText Typo="Typo.subtitle2" Style="font-weight: 600;">@appointment.DoctorName</MudText>
-                                            <MudText Typo="Typo.caption" Style="color: #9e9e9e;">@appointment.DoctorSpecialization</MudText>
+                        <div style="flex: 1;">
+                            @foreach (var appointment in PaginatedAppointments)
+                            {
+                                <div class="pa-4" style="border-bottom: 1px solid #f0f0f0;">
+                                    <div class="d-flex justify-space-between align-start mb-2">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudAvatar Size="Size.Small" Style="background: #e8eaf6; color: #667eea;">
+                                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                            </MudAvatar>
+                                            <div>
+                                                <MudText Typo="Typo.subtitle2" Style="font-weight: 600;">@appointment.DoctorName</MudText>
+                                                <MudText Typo="Typo.caption" Style="color: #9e9e9e;">@appointment.DoctorSpecialization</MudText>
+                                            </div>
                                         </div>
+                                        <MudChip T="string" Size="Size.Small" Color="@appointment.StatusColor" Variant="Variant.Filled" Style="font-size: 0.7rem;">
+                                            @appointment.StatusDisplay
+                                        </MudChip>
                                     </div>
-                                    <MudChip T="string" Size="Size.Small" Color="@appointment.StatusColor" Variant="Variant.Filled" Style="font-size: 0.7rem;">
-                                        @appointment.StatusDisplay
-                                    </MudChip>
+                                    <div class="d-flex align-center gap-2 ml-10">
+                                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Style="color: #9e9e9e;" />
+                                        <MudText Typo="Typo.body2" Style="color: #666;">@appointment.DisplayDateTime</MudText>
+                                    </div>
+                                    @if (appointment.Status == AppointmentStatus.Scheduled || appointment.Status == AppointmentStatus.Confirmed)
+                                    {
+                                        <div class="mt-2 ml-10 d-flex gap-2">
+                                            <MudButton Size="Size.Small" 
+                                                       Variant="Variant.Text" 
+                                                       Color="Color.Success"
+                                                       StartIcon="@Icons.Material.Filled.CheckCircle"
+                                                       OnClick="() => CompleteAppointment(appointment.Id)">
+                                                Complete
+                                            </MudButton>
+                                            <MudButton Size="Size.Small" 
+                                                       Variant="Variant.Text" 
+                                                       Color="Color.Error"
+                                                       StartIcon="@Icons.Material.Filled.Cancel"
+                                                       OnClick="() => CancelAppointment(appointment.Id)">
+                                                Cancel
+                                            </MudButton>
+                                        </div>
+                                    }
+                                    @if (appointment.Status == AppointmentStatus.Cancelled && appointment.AppointmentDate.Date >= DateTime.Today)
+                                    {
+                                        <div class="mt-2 ml-10">
+                                            <MudButton Size="Size.Small" 
+                                                       Variant="Variant.Text" 
+                                                       Color="Color.Success"
+                                                       StartIcon="@Icons.Material.Filled.Restore"
+                                                       OnClick="() => RestoreAppointment(appointment.Id)">
+                                                Restore
+                                            </MudButton>
+                                        </div>
+                                    }
                                 </div>
-                                <div class="d-flex align-center gap-2 ml-10">
-                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Style="color: #9e9e9e;" />
-                                    <MudText Typo="Typo.body2" Style="color: #666;">@appointment.DisplayDateTime</MudText>
+                            }
+                        </div>
+                        
+                        @if (TotalAppointmentPages > 1)
+                        {
+                            <div class="pa-3" style="border-top: 1px solid #e0e0e0; background: #fafafa;">
+                                <div class="d-flex justify-center align-center gap-2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" 
+                                                   Size="Size.Small"
+                                                   Disabled="@(appointmentCurrentPage == 1)"
+                                                   OnClick="PreviousAppointmentPage"
+                                                   Style="@(appointmentCurrentPage == 1 ? "color: #ccc;" : "color: #667eea;")" />
+                                    
+                                    @for (int i = 1; i <= TotalAppointmentPages; i++)
+                                    {
+                                        var pageNum = i;
+                                        <MudButton Size="Size.Small"
+                                                   Variant="@(appointmentCurrentPage == pageNum ? Variant.Filled : Variant.Text)"
+                                                   OnClick="() => GoToAppointmentPage(pageNum)"
+                                                   Style="@(appointmentCurrentPage == pageNum ? "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-width: 32px; padding: 4px 8px;" : "min-width: 32px; padding: 4px 8px; color: #666;")">
+                                            @pageNum
+                                        </MudButton>
+                                    }
+                                    
+                                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" 
+                                                   Size="Size.Small"
+                                                   Disabled="@(appointmentCurrentPage == TotalAppointmentPages)"
+                                                   OnClick="NextAppointmentPage"
+                                                   Style="@(appointmentCurrentPage == TotalAppointmentPages ? "color: #ccc;" : "color: #667eea;")" />
                                 </div>
-                                @if (appointment.Status == AppointmentStatus.Scheduled || appointment.Status == AppointmentStatus.Confirmed)
-                                {
-                                    <div class="mt-2 ml-10 d-flex gap-2">
-                                        <MudButton Size="Size.Small" 
-                                                   Variant="Variant.Text" 
-                                                   Color="Color.Success"
-                                                   StartIcon="@Icons.Material.Filled.CheckCircle"
-                                                   OnClick="() => CompleteAppointment(appointment.Id)">
-                                            Complete
-                                        </MudButton>
-                                        <MudButton Size="Size.Small" 
-                                                   Variant="Variant.Text" 
-                                                   Color="Color.Error"
-                                                   StartIcon="@Icons.Material.Filled.Cancel"
-                                                   OnClick="() => CancelAppointment(appointment.Id)">
-                                            Cancel
-                                        </MudButton>
-                                    </div>
-                                }
-                                @if (appointment.Status == AppointmentStatus.Cancelled && appointment.AppointmentDate.Date >= DateTime.Today)
-                                {
-                                    <div class="mt-2 ml-10">
-                                        <MudButton Size="Size.Small" 
-                                                   Variant="Variant.Text" 
-                                                   Color="Color.Success"
-                                                   StartIcon="@Icons.Material.Filled.Restore"
-                                                   OnClick="() => RestoreAppointment(appointment.Id)">
-                                            Restore
-                                        </MudButton>
-                                    </div>
-                                }
+                                <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #888; margin-top: 4px;">
+                                    Showing @(((appointmentCurrentPage - 1) * appointmentsPerPage) + 1)-@Math.Min(appointmentCurrentPage * appointmentsPerPage, myAppointments.Count) of @myAppointments.Count
+                                </MudText>
                             </div>
                         }
                     }
@@ -513,6 +556,14 @@
     private bool isBooking = false;
     private bool isSearchingPatients = false;
     private bool hasSearchedPatients = false;
+
+    // Pagination for appointments
+    private int appointmentCurrentPage = 1;
+    private int appointmentsPerPage = 4;
+    private int TotalAppointmentPages => (int)Math.Ceiling((double)myAppointments.Count / appointmentsPerPage);
+    private IEnumerable<AppointmentModel> PaginatedAppointments => myAppointments
+        .Skip((appointmentCurrentPage - 1) * appointmentsPerPage)
+        .Take(appointmentsPerPage);
 
     private List<DoctorModel> doctors = new();
     private List<TimeSlotModel> timeSlots = new();
@@ -565,9 +616,56 @@
         isLoadingDoctors = false;
     }
 
+    private async Task OpenAddDoctorDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddDoctorDialog>("Add New Doctor", options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled && result.Data is CreateDoctorRequest request)
+        {
+            var (success, message, doctor) = await BookingService.CreateDoctorAsync(request);
+            
+            if (success)
+            {
+                Snackbar.Add($"Dr. {request.FirstName} {request.LastName} has been added successfully!", Severity.Success);
+                await LoadDoctors(); // Refresh the doctors list
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
+        }
+    }
+
     private async Task LoadMyAppointments()
     {
         myAppointments = await BookingService.GetMyAppointmentsAsync();
+        appointmentCurrentPage = 1; // Reset to first page when appointments are reloaded
+    }
+
+    // Pagination methods
+    private void GoToAppointmentPage(int page)
+    {
+        appointmentCurrentPage = page;
+    }
+
+    private void PreviousAppointmentPage()
+    {
+        if (appointmentCurrentPage > 1)
+            appointmentCurrentPage--;
+    }
+
+    private void NextAppointmentPage()
+    {
+        if (appointmentCurrentPage < TotalAppointmentPages)
+            appointmentCurrentPage++;
     }
 
     private void SelectDoctor(DoctorModel doctor)
