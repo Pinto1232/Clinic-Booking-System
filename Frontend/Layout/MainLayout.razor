@@ -12,22 +12,26 @@
         <div class="top-row px-4 d-flex justify-content-between align-items-center" style="overflow: visible;">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
             
-            <div class="d-flex align-center gap-2" style="overflow: visible;">
+            <div class="d-flex align-center gap-3" style="overflow: visible;">
                 <!-- Notifications -->
                 <MudMenu AnchorOrigin="Origin.BottomRight" 
                          TransformOrigin="Origin.TopRight"
                          Class="notification-menu">
                     <ActivatorContent>
-                        <div style="padding: 4px; overflow: visible;">
-                            <MudBadge Content="@notificationCount" 
-                                      Color="Color.Error" 
-                                      Overlap="true" 
-                                      Visible="@(notificationCount > 0)"
-                                      Class="notification-badge">
-                                <MudIconButton Icon="@Icons.Material.Outlined.Notifications" 
-                                               Size="Size.Medium"
-                                               Style="color: #666;" />
-                            </MudBadge>
+                        <div style="position: relative; display: inline-block;">
+                            <MudIconButton Icon="@Icons.Material.Outlined.Notifications" 
+                                           Size="Size.Medium"
+                                           Style="color: #666;" />
+                            @if (notificationCount > 0)
+                            {
+                                <span style="position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; 
+                                             background: #f44336; color: white; border-radius: 50%; 
+                                             font-size: 0.7rem; font-weight: 600; 
+                                             display: flex; align-items: center; justify-content: center;
+                                             box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);">
+                                    @notificationCount
+                                </span>
+                            }
                         </div>
                     </ActivatorContent>
                     <ChildContent>
@@ -231,9 +235,32 @@
         font-size: 0.65rem !important;
         min-width: 18px !important;
         height: 18px !important;
+        top: -4px !important;
+        right: -4px !important;
+    }
+    
+    .notification-menu {
+        overflow: visible !important;
+    }
+    
+    .notification-menu > button,
+    .notification-menu > div {
+        overflow: visible !important;
     }
     
     .top-row {
+        overflow: visible !important;
+    }
+    
+    .top-row * {
+        overflow: visible;
+    }
+    
+    .mud-badge-root {
+        overflow: visible !important;
+    }
+    
+    .mud-badge {
         overflow: visible !important;
     }
 </style>
