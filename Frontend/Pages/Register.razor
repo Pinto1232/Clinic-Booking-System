@@ -5,123 +5,202 @@
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudCard Elevation="4">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h4" Align="Align.Center">
-                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Class="mr-2" />
-                    Clinic Booking System
-                </MudText>
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
-                    Create your account
-                </MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
+<div style="min-height: 100vh; display: flex;">
+    <!-- Left Side - Branding -->
+    <div class="d-none d-md-flex" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 30px 30px;"></div>
+        <div style="position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 3rem; text-align: center; width: 100%;">
+            <div style="background: rgba(255,255,255,0.15); border-radius: 24px; padding: 1.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Style="font-size: 4rem; color: white;" />
+            </div>
+            <MudText Typo="Typo.h3" Style="color: white; font-weight: 700; margin-bottom: 1rem;">
+                Join Us Today
+            </MudText>
+            <MudText Typo="Typo.h6" Style="color: rgba(255,255,255,0.9); font-weight: 400; max-width: 320px; line-height: 1.6;">
+                Create your account and start booking appointments in minutes.
+            </MudText>
+            
+            <div style="margin-top: 3rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; text-align: left;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem;">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: white;" />
+                    </div>
+                    <MudText Style="color: white;">Free account registration</MudText>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; text-align: left;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem;">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: white;" />
+                    </div>
+                    <MudText Style="color: white;">Access to all doctors</MudText>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; text-align: left;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem;">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: white;" />
+                    </div>
+                    <MudText Style="color: white;">24/7 appointment booking</MudText>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Register Form -->
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #fafafa; overflow-y: auto;">
+        <div style="width: 100%; max-width: 480px;">
+            <!-- Mobile Logo -->
+            <div class="d-flex d-md-none justify-center mb-4">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1rem;">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Style="font-size: 2.5rem; color: white;" />
+                </div>
+            </div>
+
+            <MudText Typo="Typo.h4" Style="font-weight: 700; color: #1a1a2e; margin-bottom: 0.5rem;">
+                Create Account
+            </MudText>
+            <MudText Typo="Typo.body1" Style="color: #6b7280; margin-bottom: 2rem;">
+                Fill in your details to get started
+            </MudText>
+
             <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
                 <DataAnnotationsValidator />
 
-                <MudGrid>
+                <MudGrid Spacing="2">
                     <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                            First Name
+                        </MudText>
                         <MudTextField @bind-Value="registerModel.FirstName"
-                                      Label="First Name"
+                                      Placeholder="John"
                                       Variant="Variant.Outlined"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Style="background: white;"
                                       Required="true"
                                       RequiredError="First name is required" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                            Last Name
+                        </MudText>
                         <MudTextField @bind-Value="registerModel.LastName"
-                                      Label="Last Name"
+                                      Placeholder="Doe"
                                       Variant="Variant.Outlined"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Style="background: white;"
                                       Required="true"
                                       RequiredError="Last name is required" />
                     </MudItem>
                 </MudGrid>
 
-                <MudTextField @bind-Value="registerModel.Email"
-                              Label="Email"
-                              Variant="Variant.Outlined"
-                              InputType="InputType.Email"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Email"
-                              Class="mt-4"
-                              Required="true"
-                              RequiredError="Email is required" />
+                <div style="margin-top: 1.25rem;">
+                    <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                        Email Address
+                    </MudText>
+                    <MudTextField @bind-Value="registerModel.Email"
+                                  Placeholder="john.doe@example.com"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Email"
+                                  Style="background: white;"
+                                  Required="true"
+                                  RequiredError="Email is required" />
+                </div>
 
-                <MudTextField @bind-Value="registerModel.PhoneNumber"
-                              Label="Phone Number (Optional)"
-                              Variant="Variant.Outlined"
-                              InputType="InputType.Telephone"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Phone"
-                              Class="mt-4" />
+                <div style="margin-top: 1.25rem;">
+                    <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                        Phone Number <span style="color: #9ca3af; font-weight: 400;">(Optional)</span>
+                    </MudText>
+                    <MudTextField @bind-Value="registerModel.PhoneNumber"
+                                  Placeholder="+1 (555) 000-0000"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Telephone"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Phone"
+                                  Style="background: white;" />
+                </div>
 
-                <MudTextField @bind-Value="registerModel.Password"
-                              Label="Password"
-                              Variant="Variant.Outlined"
-                              InputType="@passwordInputType"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@passwordIcon"
-                              OnAdornmentClick="TogglePasswordVisibility"
-                              Class="mt-4"
-                              Required="true"
-                              RequiredError="Password is required"
-                              HelperText="Minimum 6 characters" />
-
-                <MudTextField @bind-Value="registerModel.ConfirmPassword"
-                              Label="Confirm Password"
-                              Variant="Variant.Outlined"
-                              InputType="@confirmPasswordInputType"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@confirmPasswordIcon"
-                              OnAdornmentClick="ToggleConfirmPasswordVisibility"
-                              Class="mt-4"
-                              Required="true"
-                              RequiredError="Please confirm your password" />
+                <MudGrid Spacing="2" Class="mt-3">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                            Password
+                        </MudText>
+                        <MudTextField @bind-Value="registerModel.Password"
+                                      Placeholder="Min. 6 characters"
+                                      Variant="Variant.Outlined"
+                                      InputType="@passwordInputType"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@passwordIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility"
+                                      Style="background: white;"
+                                      Required="true"
+                                      RequiredError="Password is required" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                            Confirm Password
+                        </MudText>
+                        <MudTextField @bind-Value="registerModel.ConfirmPassword"
+                                      Placeholder="Confirm password"
+                                      Variant="Variant.Outlined"
+                                      InputType="@confirmPasswordInputType"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@confirmPasswordIcon"
+                                      OnAdornmentClick="ToggleConfirmPasswordVisibility"
+                                      Style="background: white;"
+                                      Required="true"
+                                      RequiredError="Please confirm your password" />
+                    </MudItem>
+                </MudGrid>
 
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+                    <MudAlert Severity="Severity.Error" Class="mt-4" Variant="Variant.Filled" Dense="true">
+                        @errorMessage
+                    </MudAlert>
                 }
 
                 @if (!string.IsNullOrEmpty(successMessage))
                 {
-                    <MudAlert Severity="Severity.Success" Class="mt-4">@successMessage</MudAlert>
+                    <MudAlert Severity="Severity.Success" Class="mt-4" Variant="Variant.Filled" Dense="true">
+                        @successMessage
+                    </MudAlert>
                 }
 
                 <MudButton ButtonType="ButtonType.Submit"
                            Variant="Variant.Filled"
-                           Color="Color.Primary"
                            FullWidth="true"
                            Size="Size.Large"
                            Class="mt-4"
-                           Disabled="@isLoading">
+                           Disabled="@isLoading"
+                           Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 52px; font-weight: 600; font-size: 1rem; text-transform: none; border-radius: 8px;">
                     @if (isLoading)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
                         <span>Creating account...</span>
                     }
                     else
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
                         <span>Create Account</span>
                     }
                 </MudButton>
             </EditForm>
-        </MudCardContent>
-        <MudCardActions Class="justify-center pb-4">
-            <MudText Typo="Typo.body2">
-                Already have an account? 
-                <MudLink Href="/login" Color="Color.Primary">Sign in here</MudLink>
-            </MudText>
-        </MudCardActions>
-    </MudCard>
-</MudContainer>
+
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <MudText Style="color: #6b7280;">
+                    Already have an account? 
+                    <MudLink Href="/login" Style="color: #667eea; font-weight: 600;">Sign in</MudLink>
+                </MudText>
+            </div>
+
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; text-align: center;">
+                <MudText Typo="Typo.caption" Style="color: #9ca3af;">
+                    © 2025 Clinic Booking System. All rights reserved.
+                </MudText>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
     private RegisterModel registerModel = new();
