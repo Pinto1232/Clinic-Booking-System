@@ -9,245 +9,480 @@
 
 <PageTitle>Dashboard - Clinic Booking System</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4">
-        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
-        Welcome to Clinic Booking System
-    </MudText>
+<!-- Hero Section -->
+<div class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 0; margin-bottom: 2rem;">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <div class="d-flex justify-space-between align-center flex-wrap gap-4">
+            <div>
+                <MudText Typo="Typo.h4" Style="color: white; font-weight: 600;">
+                    Welcome back, @(AuthService.CurrentUser?.FirstName ?? "Guest")! 👋
+                </MudText>
+                <MudText Typo="Typo.body1" Style="color: rgba(255,255,255,0.85); margin-top: 0.5rem;">
+                    Manage your appointments and health records in one place
+                </MudText>
+            </div>
+            <div class="d-flex gap-3">
+                <MudButton Variant="Variant.Filled" 
+                           Style="background-color: white; color: #667eea;"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => activeStep = 0)">
+                    New Appointment
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Style="border-color: white; color: white;"
+                           StartIcon="@Icons.Material.Filled.Person"
+                           Href="/profile">
+                    My Profile
+                </MudButton>
+            </div>
+        </div>
+    </MudContainer>
+</div>
 
-    <MudGrid>
+<MudContainer MaxWidth="MaxWidth.Large" Class="pb-8">
+    <!-- Quick Stats -->
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count(a => a.Status == AppointmentStatus.Scheduled)</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Upcoming</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count(a => a.Status == AppointmentStatus.Completed)</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Completed</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@doctors.Count</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Doctors</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                </div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h4" Style="color: white; font-weight: 700;">@myAppointments.Count</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">Total Visits</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Style="color: rgba(255,255,255,0.3); font-size: 3rem;" />
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="4">
         <!-- Book Appointment Card -->
-        <MudItem xs="12" md="8">
-            <MudCard Elevation="3">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">
-                            <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Class="mr-2" />
-                            Book an Appointment
-                        </MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <!-- Step Indicator -->
-                    <MudTabs @bind-ActivePanelIndex="activeStep" Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
-                        <MudTabPanel Text="1. Select Doctor" Disabled="@(activeStep < 0)">
-                            <MudText Typo="Typo.subtitle1" Class="mb-3">Choose a doctor for your appointment</MudText>
-                            
-                            @if (isLoadingDoctors)
+        <MudItem xs="12" lg="8">
+            <MudPaper Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0;">
+                <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
+                    <div class="d-flex align-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">Book an Appointment</MudText>
+                    </div>
+                </div>
+                
+                <div class="pa-4 pa-md-6">
+                    <!-- Progress Steps -->
+                    <div class="d-flex justify-center mb-6">
+                        <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
+                            @for (int i = 0; i < 3; i++)
                             {
-                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                                var stepIndex = i;
+                                var stepNames = new[] { "Doctor", "Schedule", "Confirm" };
+                                var stepIcons = new[] { Icons.Material.Filled.Person, Icons.Material.Filled.Schedule, Icons.Material.Filled.CheckCircle };
+                                
+                                <div class="d-flex flex-column align-center" style="min-width: 80px;">
+                                    <MudAvatar Size="Size.Medium" 
+                                               Style="@($"background: {(activeStep >= stepIndex ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "#e0e0e0")}; color: white;")">
+                                        @if (activeStep > stepIndex)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@stepIcons[stepIndex]" Size="Size.Small" />
+                                        }
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.caption" Class="mt-1" Style="@($"color: {(activeStep >= stepIndex ? "#667eea" : "#9e9e9e")}; font-weight: {(activeStep == stepIndex ? "600" : "400")};")">
+                                        @stepNames[stepIndex]
+                                    </MudText>
+                                </div>
+                                @if (i < 2)
+                                {
+                                    <div style="@($"width: 60px; height: 2px; background: {(activeStep > stepIndex ? "#667eea" : "#e0e0e0")}; margin: 0 0.5rem; margin-bottom: 1.5rem;")"></div>
+                                }
                             }
-                            else
-                            {
-                                <MudGrid>
-                                    @foreach (var doctor in doctors)
-                                    {
-                                        <MudItem xs="12" sm="6">
-                                            <MudCard Elevation="2" Class="@GetDoctorCardClass(doctor.Id)" @onclick="() => SelectDoctor(doctor)" Style="cursor: pointer;">
-                                                <MudCardContent>
-                                                    <div class="d-flex align-center">
-                                                        <MudAvatar Color="@(selectedDoctor?.Id == doctor.Id ? Color.Primary : Color.Default)" Class="mr-3">
-                                                            <MudIcon Icon="@Icons.Material.Filled.Person" />
-                                                        </MudAvatar>
-                                                        <div>
-                                                            <MudText Typo="Typo.subtitle1">@doctor.FullName</MudText>
-                                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@doctor.Specialization</MudText>
-                                                        </div>
-                                                        @if (selectedDoctor?.Id == doctor.Id)
-                                                        {
-                                                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="ml-auto" />
-                                                        }
-                                                    </div>
-                                                </MudCardContent>
-                                            </MudCard>
-                                        </MudItem>
-                                    }
-                                </MudGrid>
-                            }
-                        </MudTabPanel>
+                        </MudStack>
+                    </div>
 
-                        <MudTabPanel Text="2. Select Date & Time" Disabled="@(activeStep < 1 || selectedDoctor == null)">
-                            <MudGrid>
-                                <MudItem xs="12" sm="6">
-                                    <MudText Typo="Typo.subtitle1" Class="mb-2">Select Date</MudText>
-                                    <MudDatePicker @bind-Date="selectedDate" 
-                                                   Label="Appointment Date" 
-                                                   MinDate="DateTime.Today"
-                                                   MaxDate="DateTime.Today.AddMonths(2)"
-                                                   Variant="Variant.Outlined"
-                                                   DateFormat="MMM dd, yyyy" />
-                                </MudItem>
-                                <MudItem xs="12" sm="6">
-                                    <MudText Typo="Typo.subtitle1" Class="mb-2">Available Time Slots</MudText>
-                                    @if (isLoadingTimeSlots)
-                                    {
-                                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
-                                    }
-                                    else if (timeSlots.Count == 0)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @(selectedDate.HasValue ? "No available slots for this date. Please select another date." : "Please select a date first.")
+                    <!-- Step 1: Select Doctor -->
+                    @if (activeStep == 0)
+                    {
+                        <MudTextField @bind-Value="doctorSearchText" 
+                                      Placeholder="Search doctors by name or specialization..."
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Immediate="true"
+                                      Class="mb-4"
+                                      Style="background: white;" />
+                        
+                        @if (isLoadingDoctors)
+                        {
+                            <div class="d-flex justify-center pa-8">
+                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                            </div>
+                        }
+                        else
+                        {
+                            <MudGrid Spacing="3">
+                                @foreach (var doctor in FilteredDoctors)
+                                {
+                                    var isSelected = selectedDoctor?.Id == doctor.Id;
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Elevation="0" 
+                                                  Class="pa-4 rounded-lg cursor-pointer transition-all"
+                                                  Style="@($"border: 2px solid {(isSelected ? "#667eea" : "#e0e0e0")}; background: {(isSelected ? "#f5f3ff" : "white")}; transition: all 0.2s ease;")"
+                                                  @onclick="() => SelectDoctor(doctor)">
+                                            <div class="d-flex align-center gap-3">
+                                                <MudAvatar Size="Size.Large" Style="@($"background: {(isSelected ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "#e8eaf6")}; color: {(isSelected ? "white" : "#667eea")};")">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                                </MudAvatar>
+                                                <div class="flex-grow-1">
+                                                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@doctor.FullName</MudText>
+                                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Class="ma-0 pa-0">
+                                                        @doctor.Specialization
+                                                    </MudChip>
+                                                </div>
+                                                @if (isSelected)
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" />
+                                                }
+                                            </div>
+                                        </MudPaper>
+                                    </MudItem>
+                                }
+                                @if (!FilteredDoctors.Any() && !string.IsNullOrWhiteSpace(doctorSearchText))
+                                {
+                                    <MudItem xs="12">
+                                        <MudAlert Severity="Severity.Info" Variant="Variant.Text">
+                                            No doctors found matching "@doctorSearchText"
                                         </MudAlert>
-                                    }
-                                    else
-                                    {
-                                        <div class="d-flex flex-wrap gap-2">
-                                            @foreach (var slot in timeSlots)
-                                            {
-                                                <MudChip T="string" Color="@(selectedTimeSlot?.Id == slot.Id ? Color.Primary : Color.Default)"
-                                                         Variant="@(selectedTimeSlot?.Id == slot.Id ? Variant.Filled : Variant.Outlined)"
-                                                         OnClick="() => SelectTimeSlot(slot)"
-                                                         Style="cursor: pointer;">
-                                                    @slot.DisplayTime
-                                                </MudChip>
-                                            }
-                                        </div>
-                                    }
-                                </MudItem>
+                                    </MudItem>
+                                }
                             </MudGrid>
-                        </MudTabPanel>
+                        }
+                    }
 
-                        <MudTabPanel Text="3. Confirm" Disabled="@(activeStep < 2 || selectedTimeSlot == null)">
-                            <MudGrid>
-                                <MudItem xs="12">
-                                    <MudTextField @bind-Value="appointmentReason"
-                                                  Label="Reason for Visit"
-                                                  Variant="Variant.Outlined"
-                                                  Lines="2"
-                                                  Placeholder="Brief description of your symptoms or reason for the visit..." />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudTextField @bind-Value="appointmentNotes"
-                                                  Label="Additional Notes (Optional)"
-                                                  Variant="Variant.Outlined"
-                                                  Lines="2"
-                                                  Placeholder="Any additional information for the doctor..." />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudPaper Elevation="1" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
-                                        <MudText Typo="Typo.h6" Class="mb-3">Appointment Summary</MudText>
-                                        <MudGrid>
-                                            <MudItem xs="6">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Doctor</MudText>
-                                                <MudText Typo="Typo.body1">@(selectedDoctor?.DisplayName ?? "Not selected")</MudText>
-                                            </MudItem>
-                                            <MudItem xs="6">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Date & Time</MudText>
-                                                <MudText Typo="Typo.body1">
-                                                    @(selectedDate.HasValue && selectedTimeSlot != null 
-                                                        ? $"{selectedDate.Value:MMM dd, yyyy} at {selectedTimeSlot.DisplayTime}" 
-                                                        : "Not selected")
-                                                </MudText>
-                                            </MudItem>
-                                            <MudItem xs="12">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Duration</MudText>
-                                                <MudText Typo="Typo.body1">30 minutes</MudText>
-                                            </MudItem>
-                                        </MudGrid>
-                                    </MudPaper>
-                                </MudItem>
-                            </MudGrid>
-                        </MudTabPanel>
-                    </MudTabs>
+                    <!-- Step 2: Select Date & Time -->
+                    @if (activeStep == 1)
+                    {
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: 600; color: #424242;">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                    Select Date
+                                </MudText>
+                                <MudDatePicker @bind-Date="selectedDate" 
+                                               Placeholder="Choose appointment date"
+                                               MinDate="DateTime.Today"
+                                               MaxDate="DateTime.Today.AddMonths(2)"
+                                               Variant="Variant.Outlined"
+                                               DateFormat="dddd, MMM dd, yyyy"
+                                               Style="background: white;" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: 600; color: #424242;">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                                    Available Times
+                                </MudText>
+                                @if (isLoadingTimeSlots)
+                                {
+                                    <div class="d-flex justify-center pa-4">
+                                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                                    </div>
+                                }
+                                else if (!selectedDate.HasValue)
+                                {
+                                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true">
+                                        Please select a date first
+                                    </MudAlert>
+                                }
+                                else if (timeSlots.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true">
+                                        No available slots for this date
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var slot in timeSlots)
+                                        {
+                                            var isSlotSelected = selectedTimeSlot?.Id == slot.Id;
+                                            <MudButton Variant="@(isSlotSelected ? Variant.Filled : Variant.Outlined)"
+                                                       Color="@(isSlotSelected ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="() => SelectTimeSlot(slot)"
+                                                       Style="@($"min-width: 90px; {(isSlotSelected ? "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" : "")}")">
+                                                @slot.DisplayTime
+                                            </MudButton>
+                                        }
+                                    </div>
+                                }
+                            </MudItem>
+                        </MudGrid>
+                    }
+
+                    <!-- Step 3: Confirm -->
+                    @if (activeStep == 2)
+                    {
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="appointmentReason"
+                                              Label="Reason for Visit"
+                                              Variant="Variant.Outlined"
+                                              Lines="3"
+                                              Placeholder="Describe your symptoms or reason..."
+                                              Style="background: white;" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="appointmentNotes"
+                                              Label="Additional Notes (Optional)"
+                                              Variant="Variant.Outlined"
+                                              Lines="3"
+                                              Placeholder="Any additional information..."
+                                              Style="background: white;" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border: 1px solid #667eea30;">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-3" Style="font-weight: 600; color: #667eea;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Summarize" Size="Size.Small" Class="mr-1" />
+                                        Appointment Summary
+                                    </MudText>
+                                    <MudGrid>
+                                        <MudItem xs="12" sm="4">
+                                            <MudText Typo="Typo.caption" Style="color: #666;">Doctor</MudText>
+                                            <MudText Typo="Typo.body1" Style="font-weight: 500;">@(selectedDoctor?.FullName ?? "-")</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">@(selectedDoctor?.Specialization ?? "")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="4">
+                                            <MudText Typo="Typo.caption" Style="color: #666;">Date & Time</MudText>
+                                            <MudText Typo="Typo.body1" Style="font-weight: 500;">
+                                                @(selectedDate.HasValue ? selectedDate.Value.ToString("MMM dd, yyyy") : "-")
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">@(selectedTimeSlot?.DisplayTime ?? "")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="4">
+                                            <MudText Typo="Typo.caption" Style="color: #666;">Duration</MudText>
+                                            <MudText Typo="Typo.body1" Style="font-weight: 500;">30 minutes</MudText>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+                    }
 
                     <!-- Navigation Buttons -->
-                    <div class="d-flex justify-space-between mt-4">
+                    <div class="d-flex justify-space-between mt-6 pt-4" style="border-top: 1px solid #e0e0e0;">
                         <MudButton Variant="Variant.Text" 
                                    Color="Color.Default" 
                                    OnClick="PreviousStep"
-                                   Disabled="@(activeStep == 0)">
-                            <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Class="mr-1" /> Back
+                                   Disabled="@(activeStep == 0)"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack">
+                            Back
                         </MudButton>
                         
                         @if (activeStep < 2)
                         {
                             <MudButton Variant="Variant.Filled" 
-                                       Color="Color.Primary" 
                                        OnClick="NextStep"
-                                       Disabled="@(!CanProceedToNextStep())">
-                                Next <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="ml-1" />
+                                       Disabled="@(!CanProceedToNextStep())"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                                       Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                Continue
                             </MudButton>
                         }
                         else
                         {
                             <MudButton Variant="Variant.Filled" 
-                                       Color="Color.Success" 
                                        OnClick="BookAppointment"
-                                       Disabled="@(isBooking || !CanBookAppointment())">
+                                       Disabled="@(isBooking || !CanBookAppointment())"
+                                       StartIcon="@(isBooking ? null : Icons.Material.Filled.CheckCircle)"
+                                       Style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                                 @if (isBooking)
                                 {
-                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
                                     <span>Booking...</span>
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-1" />
                                     <span>Confirm Booking</span>
                                 }
                             </MudButton>
                         }
                     </div>
-                </MudCardContent>
-            </MudCard>
+                </div>
+            </MudPaper>
         </MudItem>
 
-        <!-- Upcoming Appointments Card -->
-        <MudItem xs="12" md="4">
-            <MudCard Elevation="3">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">
-                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
-                            My Appointments
-                        </MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent Style="max-height: 500px; overflow-y: auto;">
+        <!-- My Appointments Card -->
+        <MudItem xs="12" lg="4">
+            <MudPaper Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0; height: 100%;">
+                <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
+                    <div class="d-flex align-center justify-space-between">
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Style="font-weight: 600;">My Appointments</MudText>
+                        </div>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                            @myAppointments.Count
+                        </MudChip>
+                    </div>
+                </div>
+                
+                <div style="max-height: 480px; overflow-y: auto;">
                     @if (myAppointments.Count == 0)
                     {
-                        <MudAlert Severity="Severity.Info" Dense="true">
-                            No upcoming appointments. Book one now!
-                        </MudAlert>
+                        <div class="pa-6 text-center">
+                            <MudIcon Icon="@Icons.Material.Filled.EventBusy" Style="font-size: 4rem; color: #e0e0e0;" />
+                            <MudText Typo="Typo.body1" Class="mt-2" Style="color: #9e9e9e;">No appointments yet</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #bdbdbd;">Book your first appointment above</MudText>
+                        </div>
                     }
                     else
                     {
-                        <MudList T="AppointmentModel" Dense="true">
-                            @foreach (var appointment in myAppointments)
-                            {
-                                <MudListItem>
-                                    <div class="d-flex flex-column w-100">
-                                        <div class="d-flex justify-space-between align-center">
-                                            <MudText Typo="Typo.subtitle2">@appointment.DoctorName</MudText>
-                                            <MudChip T="string" Size="Size.Small" Color="@appointment.StatusColor" Variant="Variant.Filled">
-                                                @appointment.StatusDisplay
-                                            </MudChip>
+                        @foreach (var appointment in myAppointments)
+                        {
+                            <div class="pa-4" style="border-bottom: 1px solid #f0f0f0;">
+                                <div class="d-flex justify-space-between align-start mb-2">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Size="Size.Small" Style="background: #e8eaf6; color: #667eea;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                        </MudAvatar>
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight: 600;">@appointment.DoctorName</MudText>
+                                            <MudText Typo="Typo.caption" Style="color: #9e9e9e;">@appointment.DoctorSpecialization</MudText>
                                         </div>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @appointment.DoctorSpecialization
-                                        </MudText>
-                                        <MudText Typo="Typo.body2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" />
-                                            @appointment.DisplayDateTime
-                                        </MudText>
-                                        @if (appointment.Status == AppointmentStatus.Scheduled)
-                                        {
-                                            <div class="mt-2">
-                                                <MudButton Size="Size.Small" 
-                                                           Variant="Variant.Text" 
-                                                           Color="Color.Error"
-                                                           OnClick="() => CancelAppointment(appointment.Id)">
-                                                    Cancel
-                                                </MudButton>
-                                            </div>
-                                        }
                                     </div>
-                                </MudListItem>
-                                <MudDivider />
-                            }
-                        </MudList>
+                                    <MudChip T="string" Size="Size.Small" Color="@appointment.StatusColor" Variant="Variant.Filled" Style="font-size: 0.7rem;">
+                                        @appointment.StatusDisplay
+                                    </MudChip>
+                                </div>
+                                <div class="d-flex align-center gap-2 ml-10">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Style="color: #9e9e9e;" />
+                                    <MudText Typo="Typo.body2" Style="color: #666;">@appointment.DisplayDateTime</MudText>
+                                </div>
+                                @if (appointment.Status == AppointmentStatus.Scheduled)
+                                {
+                                    <div class="mt-2 ml-10">
+                                        <MudButton Size="Size.Small" 
+                                                   Variant="Variant.Text" 
+                                                   Color="Color.Error"
+                                                   StartIcon="@Icons.Material.Filled.Cancel"
+                                                   OnClick="() => CancelAppointment(appointment.Id)">
+                                            Cancel
+                                        </MudButton>
+                                    </div>
+                                }
+                            </div>
+                        }
                     }
-                </MudCardContent>
-            </MudCard>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Patient Search Card -->
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Class="rounded-lg overflow-hidden" Style="border: 1px solid #e0e0e0;">
+                <div class="pa-4" style="background: #fafafa; border-bottom: 1px solid #e0e0e0;">
+                    <div class="d-flex align-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">Search Patients</MudText>
+                    </div>
+                </div>
+                
+                <div class="pa-4 pa-md-6">
+                    <MudGrid Spacing="3" Class="align-center">
+                        <MudItem xs="12" sm="8" md="6">
+                            <MudTextField @bind-Value="patientSearchText" 
+                                          Placeholder="Search by name or email..."
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          Immediate="true"
+                                          OnKeyDown="OnPatientSearchKeyDown"
+                                          Style="background: white;" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4" md="2">
+                            <MudButton Variant="Variant.Filled" 
+                                       OnClick="SearchPatients"
+                                       Disabled="@(isSearchingPatients || string.IsNullOrWhiteSpace(patientSearchText))"
+                                       FullWidth="true"
+                                       Style="height: 56px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                @if (isSearchingPatients)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" Style="color: white;" />
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-1" />
+                                }
+                                Search
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (searchedPatients.Any())
+                    {
+                        <MudTable Items="@searchedPatients" Hover="true" Dense="true" Class="mt-4" Elevation="0" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
+                            <HeaderContent>
+                                <MudTh Style="background: #fafafa; font-weight: 600;">Name</MudTh>
+                                <MudTh Style="background: #fafafa; font-weight: 600;">Email</MudTh>
+                                <MudTh Style="background: #fafafa; font-weight: 600;">Phone</MudTh>
+                                <MudTh Style="background: #fafafa; font-weight: 600;">Registered</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Size="Size.Small" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.75rem;">
+                                            @context.FirstName[0]@context.LastName[0]
+                                        </MudAvatar>
+                                        <MudText Style="font-weight: 500;">@context.FullName</MudText>
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Email">@context.Email</MudTd>
+                                <MudTd DataLabel="Phone">@(context.PhoneNumber ?? "—")</MudTd>
+                                <MudTd DataLabel="Registered">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else if (hasSearchedPatients && !searchedPatients.Any())
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-4">
+                            No patients found matching "@patientSearchText"
+                        </MudAlert>
+                    }
+                </div>
+            </MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>
@@ -257,12 +492,24 @@
     private bool isLoadingDoctors = true;
     private bool isLoadingTimeSlots = false;
     private bool isBooking = false;
+    private bool isSearchingPatients = false;
+    private bool hasSearchedPatients = false;
 
     private List<DoctorModel> doctors = new();
     private List<TimeSlotModel> timeSlots = new();
     private List<AppointmentModel> myAppointments = new();
+    private List<PatientSearchResult> searchedPatients = new();
 
     private DoctorModel? selectedDoctor;
+    private string doctorSearchText = string.Empty;
+    private string patientSearchText = string.Empty;
+
+    private IEnumerable<DoctorModel> FilteredDoctors => string.IsNullOrWhiteSpace(doctorSearchText) 
+        ? doctors 
+        : doctors.Where(d => 
+            d.FullName.Contains(doctorSearchText, StringComparison.OrdinalIgnoreCase) ||
+            d.Specialization.Contains(doctorSearchText, StringComparison.OrdinalIgnoreCase));
+
     private DateTime? _selectedDate;
     private DateTime? selectedDate
     {
@@ -307,17 +554,9 @@
     private void SelectDoctor(DoctorModel doctor)
     {
         selectedDoctor = doctor;
-        // Reset subsequent selections
         _selectedDate = null;
         selectedTimeSlot = null;
         timeSlots.Clear();
-    }
-
-    private string GetDoctorCardClass(int doctorId)
-    {
-        return selectedDoctor?.Id == doctorId 
-            ? "border-2 mud-border-primary" 
-            : "";
     }
 
     private async Task OnDateChangedAsync(DateTime? date)
@@ -408,7 +647,6 @@
             {
                 Snackbar.Add(message, Severity.Success);
                 
-                // Reset form
                 activeStep = 0;
                 selectedDoctor = null;
                 _selectedDate = null;
@@ -417,7 +655,6 @@
                 appointmentNotes = null;
                 timeSlots.Clear();
 
-                // Reload appointments
                 await LoadMyAppointments();
             }
             else
@@ -447,6 +684,39 @@
         else
         {
             Snackbar.Add(message, Severity.Error);
+        }
+    }
+
+    private async Task OnPatientSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(patientSearchText))
+        {
+            await SearchPatients();
+        }
+    }
+
+    private async Task SearchPatients()
+    {
+        if (string.IsNullOrWhiteSpace(patientSearchText))
+            return;
+
+        isSearchingPatients = true;
+        hasSearchedPatients = true;
+        StateHasChanged();
+
+        try
+        {
+            searchedPatients = await BookingService.SearchPatientsAsync(patientSearchText);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error searching patients: {ex.Message}", Severity.Error);
+            searchedPatients = new();
+        }
+        finally
+        {
+            isSearchingPatients = false;
+            StateHasChanged();
         }
     }
 }

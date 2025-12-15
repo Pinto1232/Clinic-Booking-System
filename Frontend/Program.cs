@@ -26,6 +26,7 @@ builder.Services.AddMudServices(config =>
 
 // Register Services - AuthService must be registered before BookingService
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<BookingService>();
 
 await builder.Build().RunAsync();

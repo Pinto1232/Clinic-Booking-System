@@ -33,6 +33,21 @@ public class PatientService : IPatientService
         return await _patientRepository.GetAllAsync();
     }
 
+    public async Task<IEnumerable<Patient>> SearchPatientsAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return Enumerable.Empty<Patient>();
+
+        var allPatients = await _patientRepository.GetAllAsync();
+        var lowerTerm = searchTerm.ToLower().Trim();
+        
+        return allPatients.Where(p =>
+            p.FirstName.ToLower().Contains(lowerTerm) ||
+            p.LastName.ToLower().Contains(lowerTerm) ||
+            p.Email.ToLower().Contains(lowerTerm) ||
+            p.GetFullName().ToLower().Contains(lowerTerm));
+    }
+
     public async Task<Patient> RegisterPatientAsync(string firstName, string lastName, string email, string? phoneNumber)
     {
         ValidatePatientInput(firstName, lastName, email);
@@ -73,6 +88,80 @@ public class PatientService : IPatientService
         patient.LastName = lastName;
         patient.Email = email;
         patient.PhoneNumber = phoneNumber;
+        patient.UpdatedAt = DateTime.UtcNow;
+
+        return await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task<Patient> UpdatePatientProfileAsync(
+        int id,
+        string firstName,
+        string lastName,
+        string? phoneNumber,
+        DateTime? dateOfBirth,
+        Gender gender,
+        string? address,
+        string? city,
+        string? state,
+        string? zipCode,
+        string? insuranceProvider,
+        string? insurancePolicyNumber,
+        string? emergencyContactName,
+        string? emergencyContactPhone,
+        string? emergencyContactRelationship,
+        string? bloodType,
+        string? allergies,
+        string? medicalNotes)
+    {
+        if (id <= 0)
+            throw new ArgumentException("Patient ID must be greater than 0", nameof(id));
+
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("First name cannot be empty", nameof(firstName));
+
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Last name cannot be empty", nameof(lastName));
+
+        var patient = await _patientRepository.GetByIdAsync(id);
+        if (patient == null)
+            throw new KeyNotFoundException($"Patient with ID {id} not found");
+
+        // Update basic info
+        patient.FirstName = firstName.Trim();
+        patient.LastName = lastName.Trim();
+        patient.PhoneNumber = phoneNumber?.Trim();
+        
+        // Update personal info
+        patient.DateOfBirth = dateOfBirth;
+        patient.Gender = gender;
+        
+        // Update address
+        patient.Address = address?.Trim();
+        patient.City = city?.Trim();
+        patient.State = state?.Trim();
+        patient.ZipCode = zipCode?.Trim();
+        
+        // Update insurance
+        patient.InsuranceProvider = insuranceProvider?.Trim();
+        patient.InsurancePolicyNumber = insurancePolicyNumber?.Trim();
+        
+        // Update emergency contact
+        patient.EmergencyContactName = emergencyContactName?.Trim();
+        patient.EmergencyContactPhone = emergencyContactPhone?.Trim();
+        patient.EmergencyContactRelationship = emergencyContactRelationship?.Trim();
+        
+        // Update medical info
+        patient.BloodType = bloodType?.Trim();
+        patient.Allergies = allergies?.Trim();
+        patient.MedicalNotes = medicalNotes?.Trim();
+        
+        // Check if profile is complete (basic required fields)
+        patient.IsProfileComplete = !string.IsNullOrWhiteSpace(patient.FirstName) &&
+                                    !string.IsNullOrWhiteSpace(patient.LastName) &&
+                                    !string.IsNullOrWhiteSpace(patient.PhoneNumber) &&
+                                    patient.DateOfBirth.HasValue;
+        
+        patient.UpdatedAt = DateTime.UtcNow;
 
         return await _patientRepository.UpdateAsync(patient);
     }

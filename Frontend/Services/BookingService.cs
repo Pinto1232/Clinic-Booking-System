@@ -270,6 +270,21 @@ public class BookingService
         }
     }
 
+    // Search patients by name or email
+    public async Task<List<PatientSearchResult>> SearchPatientsAsync(string searchTerm)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<PatientSearchResult>>($"api/patients/search?term={Uri.EscapeDataString(searchTerm)}");
+            return response ?? new List<PatientSearchResult>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching patients: {ex.Message}");
+            return new List<PatientSearchResult>();
+        }
+    }
+
     private AppointmentModel MapToAppointmentModel(AppointmentResponse response)
     {
         return new AppointmentModel

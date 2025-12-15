@@ -1,0 +1,344 @@
+@page "/profile"
+@using ClinicBookingSystem.Frontend.Services
+@using ClinicBookingSystem.Frontend.Models
+@inject AuthService AuthService
+@inject ProfileService ProfileService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>My Profile - Clinic Booking System</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+        My Profile
+    </MudText>
+
+    @if (!AuthService.IsAuthenticated)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            Please log in to view and edit your profile.
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/login"))">
+                Go to Login
+            </MudButton>
+        </MudAlert>
+    }
+    else if (isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
+    }
+    else if (profile == null)
+    {
+        <MudAlert Severity="Severity.Error">
+            Unable to load profile. Please try again later.
+        </MudAlert>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardContent>
+                @if (!profile.IsProfileComplete)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-4">
+                        <MudText>Please complete your profile for a better experience when booking appointments.</MudText>
+                    </MudAlert>
+                }
+
+                <MudForm @ref="form" @bind-IsValid="@isFormValid">
+                    <!-- Basic Information -->
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Badge" Class="mr-2" />
+                        Basic Information
+                    </MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.FirstName" 
+                                          Label="First Name" 
+                                          Required="true" 
+                                          RequiredError="First name is required"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.LastName" 
+                                          Label="Last Name" 
+                                          Required="true" 
+                                          RequiredError="Last name is required"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Value="@profile.Email" 
+                                          Label="Email" 
+                                          Disabled="true"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Email cannot be changed" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.PhoneNumber" 
+                                          Label="Phone Number"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Telephone" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudDatePicker @bind-Date="editModel.DateOfBirth" 
+                                           Label="Date of Birth"
+                                           Variant="Variant.Outlined"
+                                           MaxDate="DateTime.Today.AddYears(-1)"
+                                           DateFormat="MMM dd, yyyy" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect @bind-Value="editModel.Gender" 
+                                       Label="Gender" 
+                                       Variant="Variant.Outlined">
+                                <MudSelectItem Value="Gender.NotSpecified">Not Specified</MudSelectItem>
+                                <MudSelectItem Value="Gender.Male">Male</MudSelectItem>
+                                <MudSelectItem Value="Gender.Female">Female</MudSelectItem>
+                                <MudSelectItem Value="Gender.Other">Other</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Address Information -->
+                    <MudText Typo="Typo.h6" Class="mt-6 mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Home" Class="mr-2" />
+                        Address
+                    </MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="editModel.Address" 
+                                          Label="Street Address"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.City" 
+                                          Label="City"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.State" 
+                                          Label="State/Province"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.ZipCode" 
+                                          Label="ZIP/Postal Code"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Insurance Information -->
+                    <MudText Typo="Typo.h6" Class="mt-6 mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" Class="mr-2" />
+                        Insurance Information
+                    </MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.InsuranceProvider" 
+                                          Label="Insurance Provider"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.InsurancePolicyNumber" 
+                                          Label="Policy Number"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Emergency Contact -->
+                    <MudText Typo="Typo.h6" Class="mt-6 mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.ContactPhone" Class="mr-2" />
+                        Emergency Contact
+                    </MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.EmergencyContactName" 
+                                          Label="Contact Name"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.EmergencyContactPhone" 
+                                          Label="Contact Phone"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Telephone" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="editModel.EmergencyContactRelationship" 
+                                          Label="Relationship"
+                                          Variant="Variant.Outlined"
+                                          Placeholder="e.g., Spouse, Parent, Sibling" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Medical Information -->
+                    <MudText Typo="Typo.h6" Class="mt-6 mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.MedicalInformation" Class="mr-2" />
+                        Medical Information
+                    </MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect @bind-Value="editModel.BloodType" 
+                                       Label="Blood Type" 
+                                       Variant="Variant.Outlined"
+                                       Clearable="true">
+                                <MudSelectItem T="string" Value="@("A+")">A+</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("A-")">A-</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("B+")">B+</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("B-")">B-</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("AB+")">AB+</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("AB-")">AB-</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("O+")">O+</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("O-")">O-</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="editModel.Allergies" 
+                                          Label="Allergies"
+                                          Variant="Variant.Outlined"
+                                          Placeholder="List any known allergies" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="editModel.MedicalNotes" 
+                                          Label="Medical Notes"
+                                          Variant="Variant.Outlined"
+                                          Lines="3"
+                                          Placeholder="Any relevant medical history or conditions..." />
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudCardContent>
+            
+            <MudCardActions Class="pa-4">
+                <MudSpacer />
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Default" 
+                           OnClick="ResetForm"
+                           Disabled="@isSaving">
+                    Reset
+                </MudButton>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           OnClick="SaveProfile"
+                           Disabled="@(isSaving || !isFormValid)">
+                    @if (isSaving)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-1" />
+                        <span>Save Profile</span>
+                    }
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private PatientProfileModel? profile;
+    private UpdatePatientProfileRequest editModel = new();
+    private MudForm? form;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool isFormValid = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+        {
+            isLoading = false;
+            return;
+        }
+
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        isLoading = true;
+        try
+        {
+            profile = await ProfileService.GetPatientProfileAsync();
+            if (profile != null)
+            {
+                MapProfileToEditModel();
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void MapProfileToEditModel()
+    {
+        if (profile == null) return;
+        
+        editModel = new UpdatePatientProfileRequest
+        {
+            FirstName = profile.FirstName,
+            LastName = profile.LastName,
+            PhoneNumber = profile.PhoneNumber,
+            DateOfBirth = profile.DateOfBirth,
+            Gender = profile.Gender,
+            Address = profile.Address,
+            City = profile.City,
+            State = profile.State,
+            ZipCode = profile.ZipCode,
+            InsuranceProvider = profile.InsuranceProvider,
+            InsurancePolicyNumber = profile.InsurancePolicyNumber,
+            EmergencyContactName = profile.EmergencyContactName,
+            EmergencyContactPhone = profile.EmergencyContactPhone,
+            EmergencyContactRelationship = profile.EmergencyContactRelationship,
+            BloodType = profile.BloodType,
+            Allergies = profile.Allergies,
+            MedicalNotes = profile.MedicalNotes
+        };
+    }
+
+    private void ResetForm()
+    {
+        MapProfileToEditModel();
+        Snackbar.Add("Form reset to saved values", Severity.Info);
+    }
+
+    private async Task SaveProfile()
+    {
+        if (form != null)
+        {
+            await form.Validate();
+            if (!isFormValid) return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var (success, message, updatedProfile) = await ProfileService.UpdatePatientProfileAsync(editModel);
+            
+            if (success)
+            {
+                profile = updatedProfile;
+                Snackbar.Add(message, Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

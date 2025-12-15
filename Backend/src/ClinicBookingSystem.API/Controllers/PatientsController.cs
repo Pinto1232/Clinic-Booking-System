@@ -1,4 +1,5 @@
 using ClinicBookingSystem.API.DTOs;
+using ClinicBookingSystem.Domain.Entities;
 using ClinicBookingSystem.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,6 +32,42 @@ public class PatientsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving patient");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}/profile")]
+    public async Task<ActionResult<PatientProfileResponse>> GetPatientProfile(int id)
+    {
+        try
+        {
+            var patient = await _patientService.GetPatientByIdAsync(id);
+            if (patient == null)
+                return NotFound(new { message = $"Patient with ID {id} not found" });
+
+            return Ok(MapToProfileResponse(patient));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving patient profile");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<PatientResponse>>> SearchPatients([FromQuery] string term)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(term))
+                return Ok(new List<PatientResponse>());
+
+            var patients = await _patientService.SearchPatientsAsync(term);
+            return Ok(patients.Select(MapToResponse));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching patients");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -143,7 +180,49 @@ public class PatientsController : ControllerBase
         }
     }
 
-    private static PatientResponse MapToResponse(Domain.Entities.Patient patient)
+    [HttpPut("{id}/profile")]
+    public async Task<ActionResult<PatientProfileResponse>> UpdatePatientProfile(int id, [FromBody] UpdatePatientProfileRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var patient = await _patientService.UpdatePatientProfileAsync(
+                id,
+                request.FirstName,
+                request.LastName,
+                request.PhoneNumber,
+                request.DateOfBirth,
+                (Gender)(int)request.Gender,
+                request.Address,
+                request.City,
+                request.State,
+                request.ZipCode,
+                request.InsuranceProvider,
+                request.InsurancePolicyNumber,
+                request.EmergencyContactName,
+                request.EmergencyContactPhone,
+                request.EmergencyContactRelationship,
+                request.BloodType,
+                request.Allergies,
+                request.MedicalNotes);
+
+            return Ok(MapToProfileResponse(patient));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Patient not found for profile update");
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating patient profile");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    private static PatientResponse MapToResponse(Patient patient)
     {
         return new PatientResponse
         {
@@ -154,6 +233,37 @@ public class PatientsController : ControllerBase
             Email = patient.Email,
             PhoneNumber = patient.PhoneNumber,
             CreatedAt = patient.CreatedAt
+        };
+    }
+
+    private static PatientProfileResponse MapToProfileResponse(Patient patient)
+    {
+        return new PatientProfileResponse
+        {
+            Id = patient.Id,
+            FirstName = patient.FirstName,
+            LastName = patient.LastName,
+            FullName = patient.GetFullName(),
+            Email = patient.Email,
+            PhoneNumber = patient.PhoneNumber,
+            DateOfBirth = patient.DateOfBirth,
+            Age = patient.GetAge(),
+            Gender = (GenderDto)(int)patient.Gender,
+            Address = patient.Address,
+            City = patient.City,
+            State = patient.State,
+            ZipCode = patient.ZipCode,
+            InsuranceProvider = patient.InsuranceProvider,
+            InsurancePolicyNumber = patient.InsurancePolicyNumber,
+            EmergencyContactName = patient.EmergencyContactName,
+            EmergencyContactPhone = patient.EmergencyContactPhone,
+            EmergencyContactRelationship = patient.EmergencyContactRelationship,
+            BloodType = patient.BloodType,
+            Allergies = patient.Allergies,
+            MedicalNotes = patient.MedicalNotes,
+            IsProfileComplete = patient.IsProfileComplete,
+            CreatedAt = patient.CreatedAt,
+            UpdatedAt = patient.UpdatedAt
         };
     }
 }
